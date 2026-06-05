@@ -269,8 +269,11 @@ function filterProducts() {
 
 // ==================== CRUD: CREATE / UPDATE ====================
 function showProductForm(data) {
+  saving = false;
+  const btn = document.getElementById('formSubmitBtn');
+  btn.disabled = false;
+  btn.textContent = data ? 'Actualizar' : 'Guardar';
   document.getElementById('modalTitle').textContent = data ? 'Editar Producto' : 'Nuevo Producto';
-  document.getElementById('formSubmitBtn').textContent = data ? 'Actualizar' : 'Guardar';
   document.getElementById('productModal').style.display = 'flex';
 }
 
@@ -350,6 +353,7 @@ function deleteProduct(id) {
 
 function closeProductForm(e) {
   if (e && e.target !== document.getElementById('productModal')) return;
+  saving = false;
   document.getElementById('productModal').style.display = 'none';
   document.getElementById('productForm').reset();
   document.getElementById('formProductId').value = '';
