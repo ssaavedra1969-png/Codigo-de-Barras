@@ -54,6 +54,7 @@ function lookupBarcode(code) {
       if (doc.exists) {
         showProductResult(doc.id, doc.data());
       } else {
+        currentEditId = code;
         showElement('scanError', true);
         document.getElementById('scanErrorMsg').textContent =
           `No se encontró ningún producto con el código ${code}`;
@@ -111,7 +112,6 @@ function toggleCamera() {
 
 function startCamera() {
   const reader = document.getElementById('cameraReader');
-  const view = document.getElementById('cameraView');
   const btn = document.getElementById('cameraBtn');
 
   if (typeof Html5Qrcode === 'undefined') {
@@ -119,7 +119,11 @@ function startCamera() {
     return;
   }
 
-  reader.style.display = 'block';
+  // Hide any previous result/error before opening camera
+  showElement('scanResult', false);
+  showElement('scanError', false);
+
+  reader.style.display = 'flex';
   btn.innerHTML = 'Detener';
   btn.classList.add('active');
   cameraActive = true;
@@ -129,7 +133,7 @@ function startCamera() {
     { facingMode: 'environment' },
     {
       fps: 15,
-      qrbox: { width: 280, height: 120 },
+      qrbox: { width: 280, height: 100 },
     },
     (decodedText) => {
       stopCamera();
@@ -137,10 +141,7 @@ function startCamera() {
     },
     () => {}
   ).catch((err) => {
-    reader.style.display = 'none';
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cámara';
-    btn.classList.remove('active');
-    cameraActive = false;
+    stopCamera();
     const msg = err.message || String(err);
     if (msg.includes('NotAllowedError') || msg.includes('permission')) {
       alert('Permiso de cámara denegado. Permití el acceso a la cámara desde la configuración del navegador.');
@@ -164,6 +165,28 @@ function stopCamera() {
   btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cámara';
   btn.classList.remove('active');
   cameraActive = false;
+}
+
+// ==================== CREATE FROM SCAN ====================
+function newProductFromScan() {
+  const code = currentEditId || document.getElementById('resultBarcode').textContent;
+  if (!code || code === '—') return;
+  // Open form with barcode prefilled
+  document.getElementById('formProductId').value = '';
+  document.getElementById('formCode').value = code;
+  document.getElementById('formCode').readOnly = true;
+  document.getElementById('formArticulo').value = '';
+  document.getElementById('formDesc').value = '';
+  document.getElementById('formColor').value = '';
+  document.getElementById('formSize').value = '';
+  document.getElementById('formCantidad').value = '';
+  document.getElementById('formCosto').value = '';
+  document.getElementById('formVenta').value = '';
+  document.getElementById('formFamilia').value = '';
+  showElement('scanResult', false);
+  showElement('scanError', false);
+  showProductForm(true);
+  switchTab('products');
 }
 
 // ==================== CRUD: READ ALL ====================
