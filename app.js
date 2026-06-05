@@ -6,8 +6,10 @@ let scanTimeout = null;
 // ==================== TAB SWITCHING ====================
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');
+  document.querySelector(`.mobile-tab[data-tab="${tab}"]`)?.classList.add('active');
   document.getElementById(`tab-${tab}`).classList.add('active');
   if (tab === 'scan') document.getElementById('barcodeInput').focus();
   if (tab === 'products') renderProductsTable();
@@ -138,7 +140,7 @@ function renderProductsTable(filter) {
         <td><span class="stock-badge ${stockClass}">${p.cantidad !== undefined ? p.cantidad : '—'}</span></td>
         <td style="font-weight:600;">${p.venta ? '$' + Number(p.venta).toLocaleString('es-AR') : '—'}</td>
         <td>${escHtml(p.familia || '—')}</td>
-        <td style="display:flex;gap:4px;">
+        <td class="table-actions">
           <button class="action-btn" onclick="editProduct('${p.id}')">Editar</button>
           <button class="action-btn danger" onclick="deleteProduct('${p.id}')">Eliminar</button>
         </td>
