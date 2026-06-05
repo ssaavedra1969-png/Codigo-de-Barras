@@ -5,6 +5,7 @@ let scanTimeout = null;
 let cameraScanner = null;
 let cameraActive = false;
 let cameraStarting = false;
+let saving = false;
 
 // ==================== TAB SWITCHING ====================
 function switchTab(tab) {
@@ -188,70 +189,6 @@ function stopCamera() {
   btn.classList.remove('active');
 }
 
-function startCamera() {
-  const reader = document.getElementById('cameraReader');
-  const btn = document.getElementById('cameraBtn');
-
-  if (typeof Html5Qrcode === 'undefined') {
-    alert('Error: La librería de escaneo no se cargó. Verificá tu conexión a internet.');
-    return;
-  }
-
-  showElement('scanResult', false);
-  showElement('scanError', false);
-
-  reader.style.display = 'flex';
-  btn.innerHTML = 'Detener';
-  btn.classList.add('active');
-  cameraActive = true;
-  cameraStarting = true;
-
-  const scanner = new Html5Qrcode('cameraView');
-  cameraScanner = scanner;
-
-  scanner.start(
-    { facingMode: 'environment' },
-    { fps: 15, qrbox: { width: 250, height: 100 } },
-    (decodedText) => {
-      stopCamera();
-      lookupBarcode(decodedText);
-    },
-    () => {}
-  ).then(() => {
-    cameraStarting = false;
-  }).catch((err) => {
-    cameraStarting = false;
-    const msg = err.message || String(err);
-    if (msg.includes('NotAllowedError') || msg.includes('permission')) {
-      stopCamera();
-      alert('Permiso de cámara denegado. Permití el acceso a la cámara desde la configuración del navegador.');
-    } else if (msg.includes('NotFoundError')) {
-      stopCamera();
-      alert('No se encontró ninguna cámara en este dispositivo.');
-    } else if (msg.includes('gUM') || msg.includes('getUserMedia')) {
-      stopCamera();
-      alert('La cámara no está disponible. Usá el código manual.');
-    }
-    // Other errors (like camera stream ending) are ignored to avoid closing unexpectedly
-  });
-}
-
-function stopCamera() {
-  cameraActive = false;
-  cameraStarting = false;
-  const s = cameraScanner;
-  cameraScanner = null;
-  if (s) {
-    try { s.stop().catch(() => {}); } catch (e) {}
-    try { s.clear().catch(() => {}); } catch (e) {}
-  }
-  document.getElementById('cameraReader').style.display = 'none';
-  document.getElementById('cameraView').innerHTML = '';
-  const btn = document.getElementById('cameraBtn');
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cámara';
-  btn.classList.remove('active');
-}
-
 // ==================== CREATE FROM SCAN ====================
 function newProductFromScan() {
   const code = currentEditId || document.getElementById('resultBarcode').textContent;
@@ -270,7 +207,7 @@ function newProductFromScan() {
   document.getElementById('formFamilia').value = '';
   showElement('scanResult', false);
   showElement('scanError', false);
-  showProductForm(true);
+  showProductForm();
   switchTab('products');
 }
 
@@ -361,6 +298,7 @@ function editProduct(id) {
 
 function saveProduct(e) {
   e.preventDefault();
+  if (saving) return;
   const code = document.getElementById('formCode').value.trim();
   if (!code) return alert('El código de barras es obligatorio');
 
@@ -376,6 +314,11 @@ function saveProduct(e) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
+  saving = true;
+  const btn = document.getElementById('formSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
   const isNew = !document.getElementById('formProductId').value;
 
   if (isNew) {
@@ -390,7 +333,12 @@ function saveProduct(e) {
         lookupBarcode(code);
       }
     })
-    .catch(err => alert('Error: ' + err.message));
+    .catch(err => alert('Error: ' + err.message))
+    .finally(() => {
+      saving = false;
+      btn.disabled = false;
+      btn.textContent = isNew ? 'Guardar' : 'Actualizar';
+    });
 }
 
 function deleteProduct(id) {
