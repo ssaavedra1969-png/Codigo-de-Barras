@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CB GLAMOURS — Sistema de Código de Barras</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><rect x='3' y='4' width='2' height='16'/><rect x='7' y='4' width='2' height='16'/><rect x='11' y='4' width='2' height='16'/><rect x='15' y='4' width='4' height='16'/><rect x='21' y='4' width='1' height='16'/></svg>">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <!-- JsBarcode for generating barcode images -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><rect x="3" y="4" width="2" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="2" height="16"/><rect x="15" y="4" width="4" height="16"/><rect x="21" y="4" width="1" height="16"/></svg>
+          <span>CB <span class="accent">GLAMOURS</span></span>
+        </div>
+        <nav class="tabs">
+          <button class="tab active" data-tab="scan" onclick="switchTab('scan')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M3 17v2a2 2 0 0 0 2 2h2M17 3h2a2 2 0 0 1 2 2v2M17 21h2a2 2 0 0 0 2-2v-2"/><rect x="7" y="9" width="10" height="6" rx="1"/><path d="M12 9V7m0 10v-2"/></svg>
+            Escanear
+          </button>
+          <button class="tab" data-tab="products" onclick="switchTab('products')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            Productos
+          </button>
+          <button class="tab" data-tab="generate" onclick="switchTab('generate')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Generar
+          </button>
+        </nav>
+        <div class="topbar-status" id="statusBadge">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">Listo</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- =============== TAB: SCAN =============== -->
+    <section id="tab-scan" class="tab-content active">
+      <!-- Hidden scanner input (auto-focused) -->
+      <input type="text" id="barcodeInput" class="barcode-input" autofocus
+        placeholder="Escaneá o tipeá el código..." inputmode="numeric">
+
+      <!-- Scan overlay (empty state) -->
+      <div id="scanEmpty" class="scan-empty">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" opacity="0.4">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2M3 17v2a2 2 0 0 0 2 2h2M17 3h2a2 2 0 0 1 2 2v2M17 21h2a2 2 0 0 0 2-2v-2"/>
+          <rect x="7" y="9" width="10" height="6" rx="1"/>
+          <path d="M12 9V7m0 10v-2"/>
+        </svg>
+        <h2>Escanéá un código de barras</h2>
+        <p>Usá la pistola escáner o tipeá el código manualmente</p>
+      </div>
+
+      <!-- Scan loading -->
+      <div id="scanLoading" class="scan-loading" style="display:none;">
+        <div class="spinner"></div>
+        <p>Buscando producto...</p>
+      </div>
+
+      <!-- Scan error -->
+      <div id="scanError" class="scan-error" style="display:none;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <p id="scanErrorMsg">Producto no encontrado</p>
+        <button class="btn btn-sm" onclick="resetScan()">Escaneá otro</button>
+      </div>
+
+      <!-- Product result card -->
+      <div id="scanResult" class="scan-result" style="display:none;">
+        <div class="result-card" id="resultCard">
+          <div class="result-img-wrapper">
+            <img id="resultImage" src="" alt="" class="result-img">
+            <div class="result-badge" id="resultCategory">Remeras</div>
+          </div>
+          <div class="result-body">
+            <div class="result-barcode">
+              <span class="result-barcode-label">Código</span>
+              <span class="result-barcode-value" id="resultBarcode">—</span>
+            </div>
+            <h2 class="result-name" id="resultName">—</h2>
+            <div class="result-price" id="resultPrice">$ —</div>
+            <div class="result-meta">
+              <div class="result-meta-item">
+                <span class="meta-label">Stock</span>
+                <span class="meta-value" id="resultStock">—</span>
+              </div>
+              <div class="result-meta-item">
+                <span class="meta-label">Talle</span>
+                <span class="meta-value" id="resultSize">—</span>
+              </div>
+              <div class="result-meta-item">
+                <span class="meta-label">Marca</span>
+                <span class="meta-value" id="resultBrand">—</span>
+              </div>
+            </div>
+            <p class="result-desc" id="resultDesc">—</p>
+            <div class="result-actions">
+              <button class="btn btn-sm" onclick="resetScan()">Nuevo escaneo</button>
+              <button class="btn btn-sm btn-outline" onclick="editFromScan()">Editar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== TAB: PRODUCTS =============== -->
+    <section id="tab-products" class="tab-content">
+      <div class="products-header">
+        <h2>Productos</h2>
+        <button class="btn" onclick="showProductForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuevo
+        </button>
+      </div>
+
+      <!-- Search/filter -->
+      <div class="search-bar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="productSearch" placeholder="Buscar por nombre o código..." oninput="filterProducts()">
+      </div>
+
+      <!-- Products table -->
+      <div class="table-wrapper">
+        <table class="products-table" id="productsTable">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Talle</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="productsBody">
+            <tr><td colspan="6" class="table-empty">Cargando productos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =============== TAB: GENERATE =============== -->
+    <section id="tab-generate" class="tab-content">
+      <div class="gen-header">
+        <h2>Generar Código de Barras</h2>
+        <p class="gen-sub">Creá etiquetas de código de barras para imprimir</p>
+      </div>
+
+      <div class="gen-form">
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Código de barras</label>
+            <input type="text" class="form-input" id="genCode" placeholder="Ej: 7791234567890" inputmode="numeric">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Nombre del producto</label>
+            <input type="text" class="form-input" id="genName" placeholder="Nombre visible en la etiqueta">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Precio (opcional)</label>
+            <input type="text" class="form-input" id="genPrice" placeholder="$ 0.00">
+          </div>
+          <div class="form-group" style="flex:0 0 auto; align-self:flex-end;">
+            <button class="btn" onclick="generateBarcode()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              Generar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="genResult" class="gen-result" style="display:none;">
+        <div class="gen-label" id="barcodeContainer">
+          <svg id="barcodeSvg"></svg>
+        </div>
+        <div class="gen-actions">
+          <button class="btn btn-sm" onclick="printBarcode()">Imprimir</button>
+          <button class="btn btn-sm btn-outline" onclick="downloadBarcode()">Descargar PNG</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== PRODUCT FORM MODAL =============== -->
+    <div class="modal-overlay" id="productModal" style="display:none;" onclick="closeProductForm(event)">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3 id="modalTitle">Nuevo Producto</h3>
+          <button class="modal-close" onclick="closeProductForm()">&times;</button>
+        </div>
+        <form id="productForm" onsubmit="saveProduct(event)">
+          <input type="hidden" id="formProductId">
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Código de barras *</label>
+              <input type="text" class="form-input" id="formCode" required inputmode="numeric">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Nombre *</label>
+              <input type="text" class="form-input" id="formName" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Precio *</label>
+              <input type="number" class="form-input" id="formPrice" required step="0.01" min="0">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Stock *</label>
+              <input type="number" class="form-input" id="formStock" required step="1" min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Talle</label>
+              <input type="text" class="form-input" id="formSize" placeholder="Ej: M, XL, 42">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Categoría</label>
+              <select class="form-input" id="formCategory">
+                <option value="">Seleccionar...</option>
+                <option value="Remeras">Remeras</option>
+                <option value="Pantalones">Pantalones</option>
+                <option value="Camperas">Camperas</option>
+                <option value="Sweaters">Sweaters</option>
+                <option value="Camisas">Camisas</option>
+                <option value="Accesorios">Accesorios</option>
+                <option value="Calzado">Calzado</option>
+                <option value="Otros">Otros</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Marca</label>
+              <input type="text" class="form-input" id="formBrand" placeholder="Ej: GLAMOURS">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">URL de imagen</label>
+              <input type="url" class="form-input" id="formImage" placeholder="https://..." oninput="previewFormImage()">
+              <img id="formImagePreview" class="form-img-preview" style="display:none;">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-input" id="formDesc" rows="2"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" onclick="closeProductForm()">Cancelar</button>
+            <button type="submit" class="btn" id="formSubmitBtn">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
