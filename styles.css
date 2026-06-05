@@ -42,23 +42,69 @@
   color: #000;
 }
 
-html {
+html, body {
   height: 100%;
-  background: var(--bg);
 }
 
 body {
   min-height: 100%;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(204,255,0,0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 80% 100%, rgba(204,255,0,0.03) 0%, transparent 60%),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ========== AMBIENT BACKGROUND ========== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -100%;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 50% 40% at 20% 10%, rgba(160, 40, 255, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 35% at 75% 15%, rgba(204, 255, 0, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse 35% 45% at 50% 70%, rgba(255, 30, 130, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 35% at 80% 60%, rgba(40, 200, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 10% 65%, rgba(200, 80, 20, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(204, 255, 0, 0.03) 0%, transparent 50%);
+  animation: ambient-drift 30s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes ambient-drift {
+  0%   { transform: translate(0%, 0%) scale(1); }
+  20%  { transform: translate(3%, -2%) scale(1.02); }
+  40%  { transform: translate(-2%, 3%) scale(0.98); }
+  60%  { transform: translate(2%, 1.5%) scale(1.01); }
+  80%  { transform: translate(-3%, -1%) scale(0.99); }
+  100% { transform: translate(1%, -2.5%) scale(1.02); }
+}
+
+/* ========== NOISE TEXTURE ========== */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.025;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  animation: noise-shift 4s steps(4) infinite;
+}
+
+@keyframes noise-shift {
+  0%   { background-position: 0 0; }
+  25%  { background-position: -128px 64px; }
+  50%  { background-position: 64px -128px; }
+  75%  { background-position: -64px -64px; }
+  100% { background-position: 128px 128px; }
 }
 
 .app {
@@ -73,7 +119,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(7,7,11,0.78);
+  background: rgba(7,7,11,0.85);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
   border-bottom: 1px solid var(--border);
@@ -840,7 +886,7 @@ select.form-input { cursor: pointer; }
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(7,7,11,0.92);
+    background: rgba(7,7,11,0.94);
     backdrop-filter: blur(24px) saturate(1.4);
     -webkit-backdrop-filter: blur(24px) saturate(1.4);
     border-top: 1px solid var(--border);
