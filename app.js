@@ -328,19 +328,36 @@ function saveProduct(e) {
     data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
   }
 
+  const SAVE_TIMEOUT = 12000;
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    saving = false;
+    btn.disabled = false;
+    btn.textContent = isNew ? 'Guardar' : 'Actualizar';
+    alert('El guardado está tardando más de lo normal. Verificá tu conexión e intentá de nuevo.');
+  }, SAVE_TIMEOUT);
+
   db.collection('productos').doc(code).set(data, { merge: true })
     .then(() => {
+      if (timedOut) return;
       closeProductForm();
       renderProductsTable();
       if (document.querySelector('.tab[data-tab="scan"]').classList.contains('active')) {
         lookupBarcode(code);
       }
     })
-    .catch(err => alert('Error: ' + err.message))
+    .catch(err => {
+      if (timedOut) return;
+      alert('Error: ' + err.message);
+    })
     .finally(() => {
-      saving = false;
-      btn.disabled = false;
-      btn.textContent = isNew ? 'Guardar' : 'Actualizar';
+      clearTimeout(timer);
+      if (!timedOut) {
+        saving = false;
+        btn.disabled = false;
+        btn.textContent = isNew ? 'Guardar' : 'Actualizar';
+      }
     });
 }
 
