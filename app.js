@@ -82,10 +82,8 @@ function showProductResult(id, data) {
   document.getElementById('resultSize').textContent = data.talle || '—';
   document.getElementById('resultCantidad').textContent =
     data.cantidad !== undefined ? data.cantidad : '—';
-  document.getElementById('resultCosto').textContent =
-    data.costo ? `$${Number(data.costo).toLocaleString('es-AR')}` : '—';
-  document.getElementById('resultPrice').textContent =
-    data.venta ? `$${Number(data.venta).toLocaleString('es-AR')}` : '—';
+  document.getElementById('resultCosto').textContent = formatMoney(data.costo);
+  document.getElementById('resultPrice').textContent = formatMoney(data.venta);
   document.getElementById('resultFamilia').textContent = data.familia || '—';
   document.getElementById('resultDesc').textContent = data.descripcion || '';
   currentEditId = id;
@@ -254,7 +252,7 @@ function renderProductsTable(filter) {
         <td>${escHtml(p.color || '—')}</td>
         <td>${escHtml(p.talle || '—')}</td>
         <td><span class="stock-badge ${stockClass}">${p.cantidad !== undefined ? p.cantidad : '—'}</span></td>
-        <td style="font-weight:600;">${p.venta ? '$' + Number(p.venta).toLocaleString('es-AR') : '—'}</td>
+        <td style="font-weight:600;">${formatMoney(p.venta)}</td>
         <td>${escHtml(p.familia || '—')}</td>
         <td class="table-actions">
           <button class="action-btn" onclick="editProduct('${p.id}')">Editar</button>
@@ -660,6 +658,10 @@ function importAdminExcel() {
 }
 
 // ==================== HELPERS ====================
+function formatMoney(n) {
+  if (n === undefined || n === null || isNaN(n)) return '—';
+  return '$' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 function showElement(id, show) {
   document.getElementById(id).style.display = show ? '' : 'none';
 }
