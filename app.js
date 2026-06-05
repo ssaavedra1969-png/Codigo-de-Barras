@@ -114,48 +114,42 @@ function startCamera() {
   const view = document.getElementById('cameraView');
   const btn = document.getElementById('cameraBtn');
 
+  if (typeof Html5Qrcode === 'undefined') {
+    alert('Error: La librería de escaneo no se cargó. Verificá tu conexión a internet.');
+    return;
+  }
+
   reader.style.display = 'block';
-  btn.textContent = 'Detener';
+  btn.innerHTML = 'Detener';
   btn.classList.add('active');
   cameraActive = true;
 
-  try {
-    cameraScanner = new Html5Qrcode('cameraView');
-    cameraScanner.start(
-      { facingMode: 'environment' },
-      {
-        fps: 15,
-        qrbox: { width: 280, height: 120 },
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.CODABAR,
-          Html5QrcodeSupportedFormats.ITF,
-        ],
-      },
-      (decodedText) => {
-        stopCamera();
-        lookupBarcode(decodedText);
-      },
-      () => {}
-    ).catch((err) => {
-      reader.style.display = 'none';
-      btn.textContent = 'Cámara';
-      btn.classList.remove('active');
-      cameraActive = false;
-      alert('No se pudo abrir la cámara: ' + (err.message || err));
-    });
-  } catch (e) {
+  cameraScanner = new Html5Qrcode('cameraView');
+  cameraScanner.start(
+    { facingMode: 'environment' },
+    {
+      fps: 15,
+      qrbox: { width: 280, height: 120 },
+    },
+    (decodedText) => {
+      stopCamera();
+      lookupBarcode(decodedText);
+    },
+    () => {}
+  ).catch((err) => {
     reader.style.display = 'none';
-    btn.textContent = 'Cámara';
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cámara';
     btn.classList.remove('active');
     cameraActive = false;
-    alert('Cámara no disponible en este dispositivo');
-  }
+    const msg = err.message || String(err);
+    if (msg.includes('NotAllowedError') || msg.includes('permission')) {
+      alert('Permiso de cámara denegado. Permití el acceso a la cámara desde la configuración del navegador.');
+    } else if (msg.includes('NotFoundError')) {
+      alert('No se encontró ninguna cámara en este dispositivo.');
+    } else {
+      alert('No se pudo abrir la cámara: ' + msg);
+    }
+  });
 }
 
 function stopCamera() {
@@ -167,7 +161,7 @@ function stopCamera() {
   document.getElementById('cameraReader').style.display = 'none';
   document.getElementById('cameraView').innerHTML = '';
   const btn = document.getElementById('cameraBtn');
-  btn.textContent = 'Cámara';
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cámara';
   btn.classList.remove('active');
   cameraActive = false;
 }
