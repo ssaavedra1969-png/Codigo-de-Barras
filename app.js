@@ -22,6 +22,7 @@ function switchTab(tab) {
   document.getElementById(`tab-${tab}`).classList.add('active');
   if (tab === 'scan') document.getElementById('barcodeInput').focus();
   if (tab === 'products') renderProductsTable();
+  if (tab === 'admin' && adminLoggedIn) updateDeleteInfo();
 }
 
 // ==================== BARCODE SCANNER ====================
@@ -552,6 +553,44 @@ function doLogout() {
   }
 }
 
+const ADMIN_COLUMNS = {
+  articulo: ['Artículo', 'ARTICULO', 'articulo', 'Código', 'CODIGO', 'codigo', 'CÓDIGO'],
+  descripcion: ['Descripción', 'DESCRIPCIÓN', 'DESCRIPCION', 'descripcion', 'Descripcion', 'Artículo', 'ARTÍCULO', 'Nombre', 'NOMBRE', 'Producto', 'PRODUCTO'],
+  color: ['Color', 'COLOR', 'color'],
+  talle: ['Talle', 'TALLE', 'talle', 'Tamaño', 'TAMAÑO', 'tamaño', 'Size', 'SIZE'],
+  cantidad: ['Cantidad', 'CANTIDAD', 'cantidad', 'Stock', 'STOCK', 'stock', 'Cant.', 'CANT'],
+  costo: ['Costo', 'COSTO', 'costo', 'Precio Costo', 'PRECIO COSTO', 'Costo Unitario'],
+  venta: ['Venta', 'VENTA', 'venta', 'Precio Venta', 'PRECIO VENTA', 'Precio', 'PRECIO', 'precio', 'Precio Vta'],
+  familia: ['Familia', 'FAMILIA', 'familia', 'Categoría', 'CATEGORÍA', 'CATEGORIA', 'categoria', 'Categoria']
+};
+
+function findCol(row, names) {
+  const keys = Object.keys(row);
+  for (const name of names) {
+    const match = keys.find(k => k.toLowerCase() === name.toLowerCase());
+    if (match) return match;
+  }
+  for (const name of names) {
+    const match = keys.find(k => k.toLowerCase().includes(name.toLowerCase()));
+    if (match) return match;
+  }
+  return null;
+}
+
+function parseNum(v) {
+  if (v === undefined || v === null || v === '') return 0;
+  if (typeof v === 'number' && !isNaN(v)) return v;
+  let s = String(v).trim().replace(/\s/g, '');
+  if (!s) return 0;
+  if (s.includes('.') && s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else if (s.includes(',')) {
+    s = s.replace(',', '.');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
 function previewExcel(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -570,19 +609,50 @@ function previewExcel(e) {
 
       if (!rows.length) { alert('El archivo está vacío'); return; }
 
-      adminExcelData = rows;
+      // Map columns
+      const first = rows[0];
+      const colArt = findCol(first, ADMIN_COLUMNS.articulo);
+      const colDesc = findCol(first, ADMIN_COLUMNS.descripcion);
+      const colColor = findCol(first, ADMIN_COLUMNS.color);
+      const colTalle = findCol(first, ADMIN_COLUMNS.talle);
+      const colCant = findCol(first, ADMIN_COLUMNS.cantidad);
+      const colCosto = findCol(first, ADMIN_COLUMNS.costo);
+      const colVenta = findCol(first, ADMIN_COLUMNS.venta);
+      const colFam = findCol(first, ADMIN_COLUMNS.familia);
 
-      // Render header
+      // Show found mapping
       const headers = Object.keys(rows[0]);
       const thead = document.getElementById('adminPreviewHead');
-      thead.innerHTML = `<tr>${headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr>`;
+      thead.innerHTML = `<tr>${headers.map(h => {
+        const mapped = [colArt, colDesc, colColor, colTalle, colCant, colCosto, colVenta, colFam].includes(h);
+        return `<th style="${mapped ? 'color:var(--accent);' : ''}">${escHtml(h)}</th>`;
+      }).join('')}</tr>`;
 
-      // Render first 10 rows
       const preview = rows.slice(0, 10);
       const tbody = document.getElementById('adminPreviewBody');
       tbody.innerHTML = preview.map(row =>
-        `<tr>${headers.map(h => `<td>${escHtml(String(row[h] || ''))}</td>`).join('')}</tr>`
+        `<tr>${headers.map(h => {
+          const raw = String(row[h] || '');
+          let display = escHtml(raw);
+          // If it's a number column, show parsed value
+          if (h === colCant) display += `<span class="admin-parse"> → ${parseIntNum(raw)}</span>`;
+          else if (h === colCosto || h === colVenta) display += `<span class="admin-parse"> → ${parseNum(raw).toFixed(2)}</span>`;
+          return `<td>${display}</td>`;
+        }).join('')}</tr>`
       ).join('');
+
+      // Store mapped data
+      adminExcelData = rows.map(row => ({
+        codigo: String(row[colArt] || '').trim(),
+        articulo: colDesc ? String(row[colDesc] || '').trim() : '',
+        descripcion: colDesc ? String(row[colDesc] || '').trim() : '',
+        color: colColor ? String(row[colColor] || '').trim() : '',
+        talle: colTalle ? String(row[colTalle] || '').trim() : '',
+        cantidad: colCant ? parseIntNum(row[colCant]) : 0,
+        costo: colCosto ? parseNum(row[colCosto]) : 0,
+        venta: colVenta ? parseNum(row[colVenta]) : 0,
+        familia: colFam ? String(row[colFam] || '').trim() : ''
+      }));
 
       document.getElementById('adminRowCount').textContent =
         `Mostrando ${Math.min(10, rows.length)} de ${rows.length} filas`;
@@ -605,6 +675,10 @@ function clearAdminFile() {
   document.getElementById('adminActions').style.display = 'none';
 }
 
+function parseIntNum(v) {
+  return Math.round(parseNum(v));
+}
+
 function importAdminExcel() {
   if (!adminExcelData || !adminExcelData.length) {
     alert('Seleccioná un archivo Excel primero');
@@ -614,47 +688,100 @@ function importAdminExcel() {
   const total = adminExcelData.length;
   let imported = 0;
   let errors = 0;
+  let pending = total;
 
   const btn = document.querySelector('#adminActions .btn');
   btn.disabled = true;
   btn.textContent = 'Importando...';
 
-  adminExcelData.forEach((row) => {
-    const code = String(row['Artículo'] || '').trim();
-    if (!code) { errors++; return; }
+  adminExcelData.forEach((item) => {
+    if (!item.codigo) { errors++; pending--; checkDone(); return; }
 
-    const productData = {
-      articulo: String(row['Descripción'] || '').trim(),
-      descripcion: String(row['Descripción'] || '').trim(),
-      color: String(row['Color'] || '').trim(),
-      talle: String(row['Talle'] || '').trim(),
-      cantidad: parseInt(String(row['Cantidad'] || '0').replace(/[.,]/g, m => m === '.' ? '' : '.')) || 0,
-      costo: parseFloat(String(row['Costo'] || '0').replace(/\./g, '').replace(',', '.')) || 0,
-      venta: parseFloat(String(row['Venta'] || '0').replace(/\./g, '').replace(',', '.')) || 0,
-      familia: String(row['Familia'] || '').trim(),
+    const data = {
+      articulo: item.articulo,
+      descripcion: item.descripcion,
+      color: item.color,
+      talle: item.talle,
+      cantidad: item.cantidad,
+      costo: item.costo,
+      venta: item.venta,
+      familia: item.familia,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    db.collection('productos').doc(code).set(productData, { merge: true })
-      .then(() => {
-        imported++;
-        checkDone();
-      })
-      .catch(() => {
-        errors++;
-        checkDone();
-      });
+    db.collection('productos').doc(item.codigo).set(data, { merge: true })
+      .then(() => { imported++; pending--; checkDone(); })
+      .catch(() => { errors++; pending--; checkDone(); });
   });
 
   function checkDone() {
-    if (imported + errors === total) {
-      btn.disabled = false;
-      btn.textContent = 'Importar a Firebase';
-      renderProductsTable();
-      alert(`Importación completada: ${imported} productos importados, ${errors} errores`);
-    }
+    if (pending > 0) return;
+    btn.disabled = false;
+    btn.textContent = 'Importar a Firebase';
+    renderProductsTable();
+    updateDeleteInfo();
+    alert(`Importación completada: ${imported} productos importados, ${errors} errores`);
   }
+}
+
+function deleteAllProducts() {
+  if (!confirm('¿Eliminar TODOS los productos definitivamente? Esta acción no se puede deshacer.')) return;
+  loadProducts().then(products => {
+    if (!products.length) { alert('No hay productos para eliminar'); return; }
+    const total = products.length;
+    if (!confirm(`Hay ${total} productos. ¿Eliminarlos todos?`)) return;
+
+    const progress = document.getElementById('adminDeleteProgress');
+    const status = document.getElementById('adminDeleteStatus');
+    const count = document.getElementById('adminDeleteCount');
+    const fill = document.getElementById('adminDeleteFill');
+    const btn = document.getElementById('deleteAllBtn');
+    btn.disabled = true;
+    btn.textContent = 'Eliminando...';
+    progress.style.display = 'block';
+
+    let deleted = 0;
+    let failed = 0;
+    const BATCH_SIZE = 500;
+
+    function deleteBatch(start) {
+      const batch = db.batch();
+      const slice = products.slice(start, start + BATCH_SIZE);
+      if (!slice.length) { done(); return; }
+      slice.forEach(p => batch.delete(db.collection('productos').doc(p.id)));
+      batch.commit().then(() => {
+        deleted += slice.length;
+        status.textContent = 'Eliminando...';
+        count.textContent = `${deleted} / ${total}`;
+        fill.style.width = `${(deleted / total) * 100}%`;
+        deleteBatch(start + BATCH_SIZE);
+      }).catch(err => {
+        failed += slice.length;
+        deleted += slice.length;
+        deleteBatch(start + BATCH_SIZE);
+      });
+    }
+
+    function done() {
+      btn.disabled = false;
+      btn.textContent = 'Eliminar todos los productos';
+      progress.style.display = 'none';
+      productsCache = [];
+      renderProductsTable();
+      updateDeleteInfo();
+      alert(`Eliminación completada: ${deleted - failed} eliminados${failed ? `, ${failed} errores` : ''}`);
+    }
+
+    deleteBatch(0);
+  }).catch(err => alert('Error: ' + err.message));
+}
+
+function updateDeleteInfo() {
+  loadProducts().then(products => {
+    document.getElementById('adminDeleteInfo').textContent =
+      products.length ? `Hay ${products.length} productos en la base de datos` : 'No hay productos en la base de datos';
+  }).catch(() => {});
 }
 
 // ==================== HELPERS ====================

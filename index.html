@@ -292,9 +292,9 @@
               <tr><td>Descripción</td><td><span class="admin-type">Texto</span></td><td>Nombre del producto</td><td>VESTIDO FLORAL MANGAS LARGAS</td></tr>
               <tr><td>Color</td><td><span class="admin-type">Texto</span></td><td>Color / variante</td><td>ROJO</td></tr>
               <tr><td>Talle</td><td><span class="admin-type">Texto</span></td><td>Talle / tamaño</td><td>M</td></tr>
-              <tr><td>Cantidad</td><td><span class="admin-type">Número</span></td><td>Stock disponible</td><td>10</td></tr>
-              <tr><td>Costo</td><td><span class="admin-type">Número</span></td><td>Precio de costo</td><td>1500.50</td></tr>
-              <tr><td>Venta</td><td><span class="admin-type">Número</span></td><td>Precio de venta</td><td>3500.00</td></tr>
+              <tr><td>Cantidad</td><td><span class="admin-type">Número</span></td><td>Stock disponible</td><td>2,00</td></tr>
+              <tr><td>Costo</td><td><span class="admin-type">Número</span></td><td>Precio de costo</td><td>1.500,50</td></tr>
+              <tr><td>Venta</td><td><span class="admin-type">Número</span></td><td>Precio de venta</td><td>59.000,00</td></tr>
               <tr><td>Familia</td><td><span class="admin-type">Texto</span></td><td>Categoría del producto</td><td>VESTIDOS</td></tr>
             </tbody>
           </table>
@@ -306,6 +306,31 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
           Importar a Firebase
         </button>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="admin-card admin-card-danger">
+        <div class="admin-card-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <h3>Zona peligrosa</h3>
+            <p>Eliminá todos los productos de la base de datos</p>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <p style="color:var(--text-muted);font-size:0.85rem;" id="adminDeleteInfo">Cargando cantidad de productos...</p>
+          <button class="btn" style="background:var(--red);color:#fff;" onclick="deleteAllProducts()" id="deleteAllBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Eliminar todos los productos
+          </button>
+          <div id="adminDeleteProgress" style="display:none;">
+            <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-muted);margin-bottom:6px;">
+              <span id="adminDeleteStatus">Eliminando...</span>
+              <span id="adminDeleteCount">0 / 0</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="adminDeleteFill"></div></div>
+          </div>
+        </div>
       </div>
     </section>
 
