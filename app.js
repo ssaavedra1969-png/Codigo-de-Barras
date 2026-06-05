@@ -6,6 +6,10 @@ let cameraScanner = null;
 let cameraActive = false;
 let cameraStarting = false;
 let saving = false;
+let adminLoggedIn = false;
+let adminExcelData = null;
+let adminExcelFile = null;
+const ADMIN_PASSWORD = 'admin123';
 
 // ==================== TAB SWITCHING ====================
 function switchTab(tab) {
@@ -508,6 +512,151 @@ function downloadBarcode() {
     link.click();
   };
   img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+}
+
+// ==================== ADMIN ====================
+function toggleAdmin() {
+  if (adminLoggedIn) { doLogout(); return; }
+  document.getElementById('adminPass').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('adminPass').focus(), 200);
+}
+
+function doLogin(e) {
+  e.preventDefault();
+  const pass = document.getElementById('adminPass').value;
+  if (pass !== ADMIN_PASSWORD) {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('adminPass').value = '';
+    document.getElementById('adminPass').focus();
+    return;
+  }
+  adminLoggedIn = true;
+  document.getElementById('loginModal').style.display = 'none';
+  document.getElementById('loginBtn').classList.add('logged-in');
+  document.getElementById('adminTab').style.display = '';
+  document.getElementById('adminMobileTab').style.display = '';
+}
+
+function closeLogin(e) {
+  if (e && e.target !== document.getElementById('loginModal')) return;
+  document.getElementById('loginModal').style.display = 'none';
+}
+
+function doLogout() {
+  adminLoggedIn = false;
+  document.getElementById('loginBtn').classList.remove('logged-in');
+  document.getElementById('adminTab').style.display = 'none';
+  document.getElementById('adminMobileTab').style.display = 'none';
+  if (document.getElementById('tab-admin').classList.contains('active')) {
+    switchTab('scan');
+  }
+}
+
+function previewExcel(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  adminExcelFile = file;
+
+  document.getElementById('adminFileName').textContent = `${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+  document.getElementById('adminFileInfo').style.display = 'flex';
+
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    try {
+      const data = new Uint8Array(ev.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+      if (!rows.length) { alert('El archivo está vacío'); return; }
+
+      adminExcelData = rows;
+
+      // Render header
+      const headers = Object.keys(rows[0]);
+      const thead = document.getElementById('adminPreviewHead');
+      thead.innerHTML = `<tr>${headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr>`;
+
+      // Render first 10 rows
+      const preview = rows.slice(0, 10);
+      const tbody = document.getElementById('adminPreviewBody');
+      tbody.innerHTML = preview.map(row =>
+        `<tr>${headers.map(h => `<td>${escHtml(String(row[h] || ''))}</td>`).join('')}</tr>`
+      ).join('');
+
+      document.getElementById('adminRowCount').textContent =
+        `Mostrando ${Math.min(10, rows.length)} de ${rows.length} filas`;
+
+      document.getElementById('adminPreview').style.display = 'block';
+      document.getElementById('adminActions').style.display = 'flex';
+    } catch (err) {
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function clearAdminFile() {
+  adminExcelData = null;
+  adminExcelFile = null;
+  document.getElementById('adminExcel').value = '';
+  document.getElementById('adminFileInfo').style.display = 'none';
+  document.getElementById('adminPreview').style.display = 'none';
+  document.getElementById('adminActions').style.display = 'none';
+}
+
+function importAdminExcel() {
+  if (!adminExcelData || !adminExcelData.length) {
+    alert('Seleccioná un archivo Excel primero');
+    return;
+  }
+
+  const total = adminExcelData.length;
+  let imported = 0;
+  let errors = 0;
+
+  const btn = document.querySelector('#adminActions .btn');
+  btn.disabled = true;
+  btn.textContent = 'Importando...';
+
+  adminExcelData.forEach((row) => {
+    const code = String(row['Artículo'] || '').trim();
+    if (!code) { errors++; return; }
+
+    const productData = {
+      articulo: String(row['Descripción'] || '').trim(),
+      descripcion: String(row['Descripción'] || '').trim(),
+      color: String(row['Color'] || '').trim(),
+      talle: String(row['Talle'] || '').trim(),
+      cantidad: parseInt(String(row['Cantidad'] || '0').replace(/[.,]/g, m => m === '.' ? '' : '.')) || 0,
+      costo: parseFloat(String(row['Costo'] || '0').replace(/\./g, '').replace(',', '.')) || 0,
+      venta: parseFloat(String(row['Venta'] || '0').replace(/\./g, '').replace(',', '.')) || 0,
+      familia: String(row['Familia'] || '').trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    db.collection('productos').doc(code).set(productData, { merge: true })
+      .then(() => {
+        imported++;
+        checkDone();
+      })
+      .catch(() => {
+        errors++;
+        checkDone();
+      });
+  });
+
+  function checkDone() {
+    if (imported + errors === total) {
+      btn.disabled = false;
+      btn.textContent = 'Importar a Firebase';
+      renderProductsTable();
+      alert(`Importación completada: ${imported} productos importados, ${errors} errores`);
+    }
+  }
 }
 
 // ==================== HELPERS ====================

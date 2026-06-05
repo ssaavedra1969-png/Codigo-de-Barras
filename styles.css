@@ -210,6 +210,24 @@ body::after {
   50% { opacity: 0.2; transform: scale(0.7); }
 }
 
+.btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 4px;
+}
+.btn-login:hover { border-color: var(--border-hover); color: var(--text-secondary); background: var(--bg-hover); }
+.btn-login.logged-in { color: var(--accent); border-color: var(--accent-dim); background: var(--accent-dim); }
+.btn-login.logged-in:hover { background: var(--accent-mid); }
+
 /* ==================== TABS CONTENT ==================== */
 .tab-content {
   display: none;
@@ -784,6 +802,109 @@ select.form-input { cursor: pointer; }
 
 .gen-actions { display: flex; gap: 10px; }
 
+/* ==================== ADMIN TAB ==================== */
+.admin-header { margin-bottom: 22px; }
+.admin-header h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
+
+.admin-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-card-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+.admin-card-header svg { flex-shrink: 0; margin-top: 2px; }
+.admin-card-header h3 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+.admin-card-header p { color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
+
+.admin-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+}
+.admin-dropzone:hover { border-color: var(--border-hover); background: var(--bg-hover); }
+.admin-dropzone p { color: var(--text-muted); font-size: 0.85rem; }
+.admin-dropzone p strong { color: var(--text-secondary); }
+
+.admin-file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.admin-file-info .action-btn { font-size: 0.7rem; }
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.admin-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+.admin-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: var(--bg-hover); }
+
+.admin-type {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.admin-row-count {
+  padding: 12px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+}
+
+.admin-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+.admin-actions .btn { padding: 14px 36px; font-size: 0.95rem; }
+
 /* ==================== MODAL ==================== */
 .modal-overlay {
   position: fixed;
@@ -1019,6 +1140,18 @@ select.form-input { cursor: pointer; }
 
   .products-header > div { flex-wrap: wrap; }
   #excelInput + .btn { font-size: 0.72rem; padding: 7px 11px; }
+
+  .admin-header { padding: 0 16px; }
+  .admin-header h2 { font-size: 1.1rem; }
+  .admin-card { margin: 0 16px 14px; padding: 16px; border-radius: var(--radius-sm); }
+  .admin-card-header { gap: 12px; }
+  .admin-card-header h3 { font-size: 0.9rem; }
+  .admin-dropzone { padding: 28px 16px; }
+  .admin-dropzone svg { width: 24px; height: 24px; }
+  .admin-table { font-size: 0.7rem; }
+  .admin-table th, .admin-table td { padding: 8px 6px; }
+  .admin-actions { margin: 0 16px 24px; }
+  .admin-actions .btn { width: 100%; justify-content: center; }
 
   .tab span { display: none; }
 }
