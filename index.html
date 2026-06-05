@@ -56,12 +56,12 @@
         Cámara
       </button>
 
-      <div id="cameraReader" class="camera-reader" style="display:none;">
-        <div class="camera-header">
+      <div id="cameraReader" class="camera-reader" style="display:none;" onclick="stopCamera()">
+        <div class="camera-header" onclick="event.stopPropagation()">
           <span class="camera-label">Apuntá al código de barras</span>
-          <button class="camera-close" onclick="toggleCamera()">&times;</button>
+          <button class="camera-close" onclick="stopCamera()">&times;</button>
         </div>
-        <div id="cameraView" class="camera-view"></div>
+        <div id="cameraView" class="camera-view" onclick="event.stopPropagation()"></div>
         <div class="camera-hint" id="cameraHint">Esperando código...</div>
       </div>
 
