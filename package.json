@@ -1,0 +1,13 @@
+{
+  "name": "cb-glamours-sync",
+  "version": "1.0.0",
+  "description": "Script para sincronizar Stock.xlsx con Firebase Firestore",
+  "private": true,
+  "scripts": {
+    "sync": "node sync-stock.js"
+  },
+  "dependencies": {
+    "firebase": "^10.7.1",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -25,11 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
-  // Auto-focus on any click
   document.addEventListener('click', () => input.focus());
 });
 
-// Keyboard shortcut: Ctrl+1, Ctrl+2, Ctrl+3 for tabs
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && ['1','2','3'].includes(e.key)) {
     e.preventDefault();
@@ -66,23 +64,18 @@ function lookupBarcode(code) {
 
 function showProductResult(id, data) {
   showElement('scanResult', true);
-  const img = document.getElementById('resultImage');
-  if (data.imagen) {
-    img.src = data.imagen;
-    img.style.display = 'block';
-  } else {
-    img.style.display = 'none';
-  }
   document.getElementById('resultBarcode').textContent = id;
-  document.getElementById('resultName').textContent = data.nombre || '—';
-  document.getElementById('resultPrice').textContent =
-    data.precio ? `$${Number(data.precio).toLocaleString('es-AR')}` : '—';
-  document.getElementById('resultStock').textContent =
-    data.stock !== undefined ? data.stock : '—';
+  document.getElementById('resultArticulo').textContent = data.articulo || '—';
+  document.getElementById('resultColor').textContent = data.color || '—';
   document.getElementById('resultSize').textContent = data.talle || '—';
-  document.getElementById('resultBrand').textContent = data.marca || '—';
+  document.getElementById('resultCantidad').textContent =
+    data.cantidad !== undefined ? data.cantidad : '—';
+  document.getElementById('resultCosto').textContent =
+    data.costo ? `$${Number(data.costo).toLocaleString('es-AR')}` : '—';
+  document.getElementById('resultPrice').textContent =
+    data.venta ? `$${Number(data.venta).toLocaleString('es-AR')}` : '—';
+  document.getElementById('resultFamilia').textContent = data.familia || '—';
   document.getElementById('resultDesc').textContent = data.descripcion || '';
-  document.getElementById('resultCategory').textContent = data.categoria || 'Producto';
   currentEditId = id;
 }
 
@@ -106,7 +99,7 @@ function resetScan() {
 
 // ==================== CRUD: READ ALL ====================
 function loadProducts() {
-  return db.collection('productos').orderBy('nombre').get()
+  return db.collection('productos').orderBy('articulo').get()
     .then(snapshot => {
       productsCache = [];
       snapshot.forEach(doc => {
@@ -118,31 +111,33 @@ function loadProducts() {
 
 function renderProductsTable(filter) {
   const tbody = document.getElementById('productsBody');
-  tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Cargando...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Cargando...</td></tr>';
 
   loadProducts().then(products => {
     if (!products.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No hay productos. Agregá el primero.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No hay productos. Agregá el primero.</td></tr>';
       return;
     }
     const q = (filter || '').toLowerCase();
     const filtered = q
-      ? products.filter(p => p.nombre?.toLowerCase().includes(q) || p.id?.includes(q))
+      ? products.filter(p => p.articulo?.toLowerCase().includes(q) || p.id?.includes(q))
       : products;
 
     if (!filtered.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="table-empty">Sin resultados para "${q}"</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="table-empty">Sin resultados para "${q}"</td></tr>`;
       return;
     }
 
     tbody.innerHTML = filtered.map(p => {
-      const stockClass = (p.stock !== undefined && p.stock <= 3) ? 'stock-low' : 'stock-ok';
+      const stockClass = (p.cantidad !== undefined && p.cantidad <= 3) ? 'stock-low' : 'stock-ok';
       return `<tr>
         <td style="font-family:monospace;font-size:0.8rem;">${p.id}</td>
-        <td><strong>${escHtml(p.nombre || '—')}</strong></td>
-        <td style="font-weight:600;">${p.precio ? '$' + Number(p.precio).toLocaleString('es-AR') : '—'}</td>
-        <td><span class="stock-badge ${stockClass}">${p.stock !== undefined ? p.stock : '—'}</span></td>
+        <td><strong>${escHtml(p.articulo || '—')}</strong></td>
+        <td>${escHtml(p.color || '—')}</td>
         <td>${escHtml(p.talle || '—')}</td>
+        <td><span class="stock-badge ${stockClass}">${p.cantidad !== undefined ? p.cantidad : '—'}</span></td>
+        <td style="font-weight:600;">${p.venta ? '$' + Number(p.venta).toLocaleString('es-AR') : '—'}</td>
+        <td>${escHtml(p.familia || '—')}</td>
         <td style="display:flex;gap:4px;">
           <button class="action-btn" onclick="editProduct('${p.id}')">Editar</button>
           <button class="action-btn danger" onclick="deleteProduct('${p.id}')">Eliminar</button>
@@ -150,7 +145,7 @@ function renderProductsTable(filter) {
       </tr>`;
     }).join('');
   }).catch(err => {
-    tbody.innerHTML = `<tr><td colspan="6" class="table-empty">Error: ${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="table-empty">Error: ${err.message}</td></tr>`;
   });
 }
 
@@ -170,15 +165,14 @@ function fillForm(id, data) {
   document.getElementById('formProductId').value = id;
   document.getElementById('formCode').value = id;
   document.getElementById('formCode').readOnly = true;
-  document.getElementById('formName').value = data.nombre || '';
-  document.getElementById('formPrice').value = data.precio || '';
-  document.getElementById('formStock').value = data.stock || '';
-  document.getElementById('formSize').value = data.talle || '';
-  document.getElementById('formCategory').value = data.categoria || '';
-  document.getElementById('formBrand').value = data.marca || '';
-  document.getElementById('formImage').value = data.imagen || '';
+  document.getElementById('formArticulo').value = data.articulo || '';
   document.getElementById('formDesc').value = data.descripcion || '';
-  previewFormImage();
+  document.getElementById('formColor').value = data.color || '';
+  document.getElementById('formSize').value = data.talle || '';
+  document.getElementById('formCantidad').value = data.cantidad || '';
+  document.getElementById('formCosto').value = data.costo || '';
+  document.getElementById('formVenta').value = data.venta || '';
+  document.getElementById('formFamilia').value = data.familia || '';
   showProductForm(true);
 }
 
@@ -194,14 +188,14 @@ function saveProduct(e) {
   if (!code) return alert('El código de barras es obligatorio');
 
   const data = {
-    nombre: document.getElementById('formName').value.trim(),
-    precio: parseFloat(document.getElementById('formPrice').value) || 0,
-    stock: parseInt(document.getElementById('formStock').value) || 0,
-    talle: document.getElementById('formSize').value.trim(),
-    categoria: document.getElementById('formCategory').value,
-    marca: document.getElementById('formBrand').value.trim(),
-    imagen: document.getElementById('formImage').value.trim(),
+    articulo: document.getElementById('formArticulo').value.trim(),
     descripcion: document.getElementById('formDesc').value.trim(),
+    color: document.getElementById('formColor').value.trim(),
+    talle: document.getElementById('formSize').value.trim(),
+    cantidad: parseInt(document.getElementById('formCantidad').value) || 0,
+    costo: parseFloat(document.getElementById('formCosto').value) || 0,
+    venta: parseFloat(document.getElementById('formVenta').value) || 0,
+    familia: document.getElementById('formFamilia').value,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
@@ -235,19 +229,69 @@ function closeProductForm(e) {
   document.getElementById('productForm').reset();
   document.getElementById('formProductId').value = '';
   document.getElementById('formCode').readOnly = false;
-  document.getElementById('formImagePreview').style.display = 'none';
   currentEditId = null;
 }
 
-function previewFormImage() {
-  const url = document.getElementById('formImage').value.trim();
-  const preview = document.getElementById('formImagePreview');
-  if (url) {
-    preview.src = url;
-    preview.style.display = 'block';
-  } else {
-    preview.style.display = 'none';
-  }
+// ==================== EXCEL IMPORT ====================
+function importFromExcel() {
+  const fileInput = document.getElementById('excelInput');
+  const file = fileInput.files[0];
+  if (!file) return alert('Seleccioná un archivo Excel primero');
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet);
+
+      if (!rows.length) return alert('El archivo Excel está vacío');
+
+      let imported = 0;
+      let errors = 0;
+      const total = rows.length;
+
+      rows.forEach((row, index) => {
+        const code = String(row['Artículo'] || '').trim();
+        if (!code) { errors++; return; }
+
+        const productData = {
+          articulo: String(row['Descripción'] || '').trim(),
+          descripcion: String(row['Descripción'] || '').trim(),
+          color: String(row['Color'] || '').trim(),
+          talle: String(row['Talle'] || '').trim(),
+          cantidad: parseInt(String(row['Cantidad'] || '0').replace(/[.,]/g, m => m === '.' ? '' : '.')) || 0,
+          costo: parseFloat(String(row['Costo'] || '0').replace(/\./g, '').replace(',', '.')) || 0,
+          venta: parseFloat(String(row['Venta'] || '0').replace(/\./g, '').replace(',', '.')) || 0,
+          familia: String(row['Familia'] || '').trim(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        db.collection('productos').doc(code).set(productData, { merge: true })
+          .then(() => {
+            imported++;
+            if (imported + errors === total) {
+              fileInput.value = '';
+              renderProductsTable();
+              alert(`Importación completada: ${imported} productos importados, ${errors} errores`);
+            }
+          })
+          .catch(() => {
+            errors++;
+            if (imported + errors === total) {
+              fileInput.value = '';
+              renderProductsTable();
+              alert(`Importación completada: ${imported} productos importados, ${errors} errores`);
+            }
+          });
+      });
+    } catch (err) {
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // ==================== BARCODE GENERATOR ====================
@@ -273,7 +317,6 @@ function generateBarcode() {
       flat: true
     });
 
-    // Add text label below
     const container = document.getElementById('barcodeContainer');
     let label = container.querySelector('.gen-label-text');
     if (!label) {

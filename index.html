@@ -11,6 +11,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <!-- JsBarcode for generating barcode images -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <!-- SheetJS for Excel import -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
   <div class="app">
@@ -44,11 +46,9 @@
 
     <!-- =============== TAB: SCAN =============== -->
     <section id="tab-scan" class="tab-content active">
-      <!-- Hidden scanner input (auto-focused) -->
       <input type="text" id="barcodeInput" class="barcode-input" autofocus
         placeholder="Escaneá o tipeá el código..." inputmode="numeric">
 
-      <!-- Scan overlay (empty state) -->
       <div id="scanEmpty" class="scan-empty">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" opacity="0.4">
           <path d="M3 7V5a2 2 0 0 1 2-2h2M3 17v2a2 2 0 0 0 2 2h2M17 3h2a2 2 0 0 1 2 2v2M17 21h2a2 2 0 0 0 2-2v-2"/>
@@ -59,13 +59,11 @@
         <p>Usá la pistola escáner o tipeá el código manualmente</p>
       </div>
 
-      <!-- Scan loading -->
       <div id="scanLoading" class="scan-loading" style="display:none;">
         <div class="spinner"></div>
         <p>Buscando producto...</p>
       </div>
 
-      <!-- Scan error -->
       <div id="scanError" class="scan-error" style="display:none;">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         <p id="scanErrorMsg">Producto no encontrado</p>
@@ -75,29 +73,33 @@
       <!-- Product result card -->
       <div id="scanResult" class="scan-result" style="display:none;">
         <div class="result-card" id="resultCard">
-          <div class="result-img-wrapper">
-            <img id="resultImage" src="" alt="" class="result-img">
-            <div class="result-badge" id="resultCategory">Remeras</div>
-          </div>
           <div class="result-body">
             <div class="result-barcode">
               <span class="result-barcode-label">Código</span>
               <span class="result-barcode-value" id="resultBarcode">—</span>
             </div>
-            <h2 class="result-name" id="resultName">—</h2>
+            <h2 class="result-name" id="resultArticulo">—</h2>
             <div class="result-price" id="resultPrice">$ —</div>
             <div class="result-meta">
               <div class="result-meta-item">
-                <span class="meta-label">Stock</span>
-                <span class="meta-value" id="resultStock">—</span>
+                <span class="meta-label">Color</span>
+                <span class="meta-value" id="resultColor">—</span>
               </div>
               <div class="result-meta-item">
                 <span class="meta-label">Talle</span>
                 <span class="meta-value" id="resultSize">—</span>
               </div>
               <div class="result-meta-item">
-                <span class="meta-label">Marca</span>
-                <span class="meta-value" id="resultBrand">—</span>
+                <span class="meta-label">Cantidad</span>
+                <span class="meta-value" id="resultCantidad">—</span>
+              </div>
+              <div class="result-meta-item">
+                <span class="meta-label">Costo</span>
+                <span class="meta-value" id="resultCosto">—</span>
+              </div>
+              <div class="result-meta-item">
+                <span class="meta-label">Familia</span>
+                <span class="meta-value" id="resultFamilia">—</span>
               </div>
             </div>
             <p class="result-desc" id="resultDesc">—</p>
@@ -114,33 +116,40 @@
     <section id="tab-products" class="tab-content">
       <div class="products-header">
         <h2>Productos</h2>
-        <button class="btn" onclick="showProductForm()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nuevo
-        </button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="showProductForm()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo
+          </button>
+          <button class="btn btn-outline" onclick="document.getElementById('excelInput').click()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Importar Excel
+          </button>
+          <input type="file" id="excelInput" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel()">
+        </div>
       </div>
 
-      <!-- Search/filter -->
       <div class="search-bar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" id="productSearch" placeholder="Buscar por nombre o código..." oninput="filterProducts()">
       </div>
 
-      <!-- Products table -->
       <div class="table-wrapper">
         <table class="products-table" id="productsTable">
           <thead>
             <tr>
               <th>Código</th>
-              <th>Nombre</th>
-              <th>Precio</th>
-              <th>Stock</th>
+              <th>Artículo</th>
+              <th>Color</th>
               <th>Talle</th>
+              <th>Cantidad</th>
+              <th>Venta</th>
+              <th>Familia</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="productsBody">
-            <tr><td colspan="6" class="table-empty">Cargando productos...</td></tr>
+            <tr><td colspan="8" class="table-empty">Cargando productos...</td></tr>
           </tbody>
         </table>
       </div>
@@ -200,33 +209,44 @@
           <input type="hidden" id="formProductId">
           <div class="form-row">
             <div class="form-group" style="flex:1;">
-              <label class="form-label">Código de barras *</label>
-              <input type="text" class="form-input" id="formCode" required inputmode="numeric">
+              <label class="form-label">Código (Artículo) *</label>
+              <input type="text" class="form-input" id="formCode" required inputmode="numeric" placeholder="Ej: 00001">
             </div>
             <div class="form-group" style="flex:1;">
-              <label class="form-label">Nombre *</label>
-              <input type="text" class="form-input" id="formName" required>
+              <label class="form-label">Artículo *</label>
+              <input type="text" class="form-input" id="formArticulo" required placeholder="Nombre del producto">
             </div>
           </div>
           <div class="form-row">
             <div class="form-group" style="flex:1;">
-              <label class="form-label">Precio *</label>
-              <input type="number" class="form-input" id="formPrice" required step="0.01" min="0">
+              <label class="form-label">Color</label>
+              <input type="text" class="form-input" id="formColor" placeholder="Ej: Rojo, Azul, Negro">
             </div>
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Stock *</label>
-              <input type="number" class="form-input" id="formStock" required step="1" min="0">
-            </div>
-          </div>
-          <div class="form-row">
             <div class="form-group" style="flex:1;">
               <label class="form-label">Talle</label>
               <input type="text" class="form-input" id="formSize" placeholder="Ej: M, XL, 42">
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-group" style="flex:1;">
-              <label class="form-label">Categoría</label>
-              <select class="form-input" id="formCategory">
+              <label class="form-label">Cantidad *</label>
+              <input type="number" class="form-input" id="formCantidad" required step="1" min="0">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Costo</label>
+              <input type="number" class="form-input" id="formCosto" step="0.01" min="0" placeholder="$ 0.00">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Venta *</label>
+              <input type="number" class="form-input" id="formVenta" required step="0.01" min="0" placeholder="$ 0.00">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Familia</label>
+              <select class="form-input" id="formFamilia">
                 <option value="">Seleccionar...</option>
+                <option value="OWOKO">OWOKO</option>
                 <option value="Remeras">Remeras</option>
                 <option value="Pantalones">Pantalones</option>
                 <option value="Camperas">Camperas</option>
@@ -236,17 +256,6 @@
                 <option value="Calzado">Calzado</option>
                 <option value="Otros">Otros</option>
               </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Marca</label>
-              <input type="text" class="form-input" id="formBrand" placeholder="Ej: GLAMOURS">
-            </div>
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">URL de imagen</label>
-              <input type="url" class="form-input" id="formImage" placeholder="https://..." oninput="previewFormImage()">
-              <img id="formImagePreview" class="form-img-preview" style="display:none;">
             </div>
           </div>
           <div class="form-group">
