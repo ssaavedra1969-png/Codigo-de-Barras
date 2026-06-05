@@ -13,6 +13,8 @@
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <!-- SheetJS for Excel import -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- html5-qrcode for camera scanning -->
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
 </head>
 <body>
   <div class="app">
@@ -48,6 +50,19 @@
     <section id="tab-scan" class="tab-content active">
       <input type="text" id="barcodeInput" class="barcode-input" autofocus
         placeholder="Escaneá o tipeá el código..." inputmode="numeric">
+
+      <button class="btn btn-camera" id="cameraBtn" onclick="toggleCamera()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Cámara
+      </button>
+
+      <div id="cameraReader" class="camera-reader" style="display:none;">
+        <div class="camera-header">
+          <span class="camera-label">Apuntá al código de barras</span>
+          <button class="camera-close" onclick="toggleCamera()">&times;</button>
+        </div>
+        <div id="cameraView" class="camera-view"></div>
+      </div>
 
       <div id="scanEmpty" class="scan-empty">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" opacity="0.4">

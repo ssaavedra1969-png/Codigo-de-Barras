@@ -210,6 +210,77 @@ html, body {
 
 .scan-error p { color: var(--red); font-size: 1rem; }
 
+/* Camera button */
+.btn-camera {
+  display: none;
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  margin-top: 12px;
+  font-size: 1rem;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 2px dashed var(--border);
+  color: var(--text-secondary);
+}
+.btn-camera:hover {
+  border-color: var(--text-muted);
+  color: var(--text);
+  box-shadow: none;
+  transform: none;
+}
+.btn-camera.active {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(255,68,85,0.05);
+}
+
+/* Camera reader overlay */
+.camera-reader {
+  margin-top: 12px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--border);
+  animation: fade-up 0.3s ease;
+}
+.camera-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.6);
+}
+.camera-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.camera-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+.camera-close:hover { color: var(--text); }
+.camera-view {
+  width: 100%;
+  min-height: 240px;
+  background: #000;
+  position: relative;
+}
+.camera-view video {
+  width: 100%;
+  display: block;
+}
+
+/* Show camera button only on mobile/small screens */
+@media (max-width: 700px) {
+  .btn-camera { display: flex; }
+}
+
 /* Result card */
 .scan-result {
   animation: fade-up 0.4s ease;

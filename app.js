@@ -2,9 +2,12 @@
 let currentEditId = null;
 let productsCache = [];
 let scanTimeout = null;
+let cameraScanner = null;
+let cameraActive = false;
 
 // ==================== TAB SWITCHING ====================
 function switchTab(tab) {
+  if (tab !== 'scan') stopCamera();
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
@@ -93,10 +96,80 @@ function editFromScan() {
 }
 
 function resetScan() {
+  stopCamera();
   showElement('scanResult', false);
   showElement('scanError', false);
   showElement('scanEmpty', true);
   document.getElementById('barcodeInput').focus();
+}
+
+// ==================== CAMERA SCANNER ====================
+function toggleCamera() {
+  if (cameraActive) { stopCamera(); return; }
+  startCamera();
+}
+
+function startCamera() {
+  const reader = document.getElementById('cameraReader');
+  const view = document.getElementById('cameraView');
+  const btn = document.getElementById('cameraBtn');
+
+  reader.style.display = 'block';
+  btn.textContent = 'Detener';
+  btn.classList.add('active');
+  cameraActive = true;
+
+  try {
+    cameraScanner = new Html5Qrcode('cameraView');
+    cameraScanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 15,
+        qrbox: { width: 280, height: 120 },
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODABAR,
+          Html5QrcodeSupportedFormats.ITF,
+        ],
+      },
+      (decodedText) => {
+        stopCamera();
+        lookupBarcode(decodedText);
+      },
+      () => {}
+    ).catch((err) => {
+      reader.style.display = 'none';
+      btn.textContent = 'Cámara';
+      btn.classList.remove('active');
+      cameraActive = false;
+      alert('No se pudo abrir la cámara: ' + (err.message || err));
+    });
+  } catch (e) {
+    reader.style.display = 'none';
+    btn.textContent = 'Cámara';
+    btn.classList.remove('active');
+    cameraActive = false;
+    alert('Cámara no disponible en este dispositivo');
+  }
+}
+
+function stopCamera() {
+  if (cameraScanner) {
+    cameraScanner.stop().catch(() => {});
+    cameraScanner.clear().catch(() => {});
+    cameraScanner = null;
+  }
+  document.getElementById('cameraReader').style.display = 'none';
+  document.getElementById('cameraView').innerHTML = '';
+  const btn = document.getElementById('cameraBtn');
+  btn.textContent = 'Cámara';
+  btn.classList.remove('active');
+  cameraActive = false;
 }
 
 // ==================== CRUD: READ ALL ====================
