@@ -2,26 +2,36 @@ import { db, firebase } from './firebase.js';
 import { toastError, toastSuccess } from './toast.js';
 import JsBarcode from 'jsbarcode';
 
-const FORMATS = [
-  { value: 'EAN13', label: 'EAN-13 (13 dígitos)' },
-  { value: 'EAN8', label: 'EAN-8 (8 dígitos)' },
-  { value: 'UPC', label: 'UPC-A (12 dígitos)' },
-  { value: 'CODE128', label: 'CODE128 (variable)' },
-  { value: 'CODE39', label: 'CODE39 (variable)' },
-  { value: 'ITF', label: 'ITF-14 (variable)' },
-];
+const FAMILY_PREFIX = {
+  '47Street': '779001',
+  'Alpiste': '779002',
+  'Batuk': '779003',
+  'Billi': '779004',
+  'Clandestin': '779005',
+  'Cyr': '779006',
+  'Geppeto': '779007',
+  'Ibiza': '779008',
+  'Isostasia': '779009',
+  'Kiech': '779010',
+  'Kuguana': '779011',
+  'Lana': '779012',
+  'Legacy': '779013',
+  'Owoko': '779014',
+  'Sail': '779015',
+};
 
 let existingCodes = new Set();
 let saving = false;
 
-export function initGenerate() {
-  const select = document.getElementById('genFormat');
-  if (select) {
-    select.innerHTML = FORMATS.map(f =>
-      `<option value="${f.value}">${f.label}</option>`
-    ).join('');
+function ean13CheckDigit(code12) {
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(code12[i]) * (i % 2 === 0 ? 1 : 3);
   }
+  return (10 - (sum % 10)) % 10;
+}
 
+export function initGenerate() {
   db.collection('productos').get().then(snapshot => {
     existingCodes = new Set();
     snapshot.forEach(doc => existingCodes.add(doc.id));
@@ -35,21 +45,24 @@ export function initGenerate() {
 }
 
 export function generateUniqueCode() {
-  const format = document.getElementById('genFormat')?.value || 'EAN13';
-  let len, prefix;
-  if (format === 'EAN13') { len = 13; prefix = '779'; }
-  else if (format === 'EAN8') { len = 8; prefix = '77'; }
-  else if (format === 'UPC') { len = 12; prefix = '7'; }
-  else { len = 10; prefix = '9'; }
+  const familia = document.getElementById('genFamilia').value;
+  if (!familia) return toastError('Seleccioná una familia primero');
 
-  for (let attempt = 0; attempt < 100; attempt++) {
-    let code = prefix;
-    for (let i = prefix.length; i < len; i++) {
-      code += Math.floor(Math.random() * 10);
+  const prefix = FAMILY_PREFIX[familia];
+  if (!prefix) return toastError('Esa familia no tiene prefijo asignado');
+
+  for (let attempt = 0; attempt < 200; attempt++) {
+    let mid = '';
+    for (let i = 0; i < 6; i++) {
+      mid += Math.floor(Math.random() * 10);
     }
+    const code12 = prefix + mid;
+    const check = ean13CheckDigit(code12);
+    const code = code12 + check;
+
     if (!existingCodes.has(code)) {
       document.getElementById('genCode').value = code;
-      toastSuccess('Código único generado');
+      generateBarcode();
       return;
     }
   }
@@ -58,24 +71,14 @@ export function generateUniqueCode() {
 
 export function generateBarcode() {
   const code = document.getElementById('genCode').value.trim();
-  const format = document.getElementById('genFormat')?.value || 'EAN13';
 
-  if (!code) return toastError('Ingresá un código de barras');
-
-  let validLen = true;
-  if (format === 'EAN13') validLen = /^\d{12,13}$/.test(code);
-  else if (format === 'EAN8') validLen = /^\d{7,8}$/.test(code);
-  else if (format === 'UPC') validLen = /^\d{11,12}$/.test(code);
-
-  if (!validLen) {
-    toastError(`El código no tiene la longitud correcta para formato ${format}`);
-    return;
-  }
+  if (!code) return toastError('Generá un código primero');
+  if (!/^\d{13}$/.test(code)) return toastError('El código debe tener 13 dígitos');
 
   try {
     JsBarcode('#barcodeSvg', code, {
-      format,
-      width: format === 'CODE128' ? 1.2 : 2,
+      format: 'EAN13',
+      width: 2,
       height: 80,
       displayValue: true,
       fontSize: 16,
@@ -101,8 +104,8 @@ export async function saveGeneratedProduct() {
   if (saving) return;
 
   const code = document.getElementById('genCode').value.trim();
-  if (!code) return toastError('Ingresá o generá un código de barras primero');
-  if (code.length < 3) return toastError('El código debe tener al menos 3 caracteres');
+  if (!code) return toastError('Generá un código de barras primero');
+  if (!/^\d{13}$/.test(code)) return toastError('El código debe tener 13 dígitos');
 
   if (existingCodes.has(code)) {
     return toastError('Ese código ya existe en la base de datos');
@@ -131,7 +134,6 @@ export async function saveGeneratedProduct() {
     await db.collection('productos').doc(code).set(data);
     existingCodes.add(code);
     toastSuccess('Producto guardado correctamente');
-    generateBarcode();
   } catch (err) {
     console.error('saveGeneratedProduct error:', err);
     const msg = err.message || '';

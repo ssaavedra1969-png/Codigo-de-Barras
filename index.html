@@ -199,15 +199,38 @@
       <div class="gen-form">
         <div class="form-row">
           <div class="form-group" style="flex:1;">
+            <label class="form-label">Familia</label>
+            <select class="form-input" id="genFamilia">
+              <option value="">Seleccionar...</option>
+              <option value="47Street">47Street</option>
+              <option value="Alpiste">Alpiste</option>
+              <option value="Batuk">Batuk</option>
+              <option value="Billi">Billi</option>
+              <option value="Clandestin">Clandestin</option>
+              <option value="Cyr">Cyr</option>
+              <option value="Geppeto">Geppeto</option>
+              <option value="Ibiza">Ibiza</option>
+              <option value="Isostasia">Isostasia</option>
+              <option value="Kiech">Kiech</option>
+              <option value="Kuguana">Kuguana</option>
+              <option value="Lana">Lana</option>
+              <option value="Legacy">Legacy</option>
+              <option value="Owoko">Owoko</option>
+              <option value="Sail">Sail</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
             <label class="form-label">Código de barras</label>
             <div style="display:flex;gap:8px;">
-              <input type="text" class="form-input" id="genCode" placeholder="Ej: 7791234567890" inputmode="numeric" style="flex:1;">
-              <button class="btn btn-sm btn-outline" onclick="generateUniqueCode()" title="Generar código único">
+              <input type="text" class="form-input" id="genCode" placeholder="Completá Familia y presioná Único" inputmode="numeric" style="flex:1;" readonly>
+              <button class="btn btn-sm btn-outline" onclick="generateUniqueCode()" title="Generar código único de 13 dígitos">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 Único
               </button>
             </div>
           </div>
+        </div>
+        <div class="form-row">
           <div class="form-group" style="flex:1;">
             <label class="form-label">Artículo</label>
             <input type="text" class="form-input" id="genName" placeholder="Nombre del producto">
@@ -238,37 +261,10 @@
             <label class="form-label">Venta</label>
             <input type="number" class="form-input" id="genVenta" step="0.01" min="0" placeholder="$ 0.00">
           </div>
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Familia</label>
-            <select class="form-input" id="genFamilia">
-              <option value="">Seleccionar...</option>
-              <option value="47Street">47Street</option>
-              <option value="Alpiste">Alpiste</option>
-              <option value="Batuk">Batuk</option>
-              <option value="Billi">Billi</option>
-              <option value="Clandestin">Clandestin</option>
-              <option value="Cyr">Cyr</option>
-              <option value="Geppeto">Geppeto</option>
-              <option value="Ibiza">Ibiza</option>
-              <option value="Isostasia">Isostasia</option>
-              <option value="Kiech">Kiech</option>
-              <option value="Kuguana">Kuguana</option>
-              <option value="Lana">Lana</option>
-              <option value="Legacy">Legacy</option>
-              <option value="Owoko">Owoko</option>
-              <option value="Sail">Sail</option>
-            </select>
-          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Descripción</label>
           <textarea class="form-input" id="genDesc" rows="2" placeholder="Descripción del producto (opcional)"></textarea>
-        </div>
-        <div class="form-row">
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Formato código de barras</label>
-            <select class="form-input" id="genFormat"></select>
-          </div>
         </div>
         <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
           <button class="btn" onclick="generateBarcode()">
