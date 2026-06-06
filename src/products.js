@@ -252,9 +252,9 @@ export function saveProduct(e) {
       renderProductsTable();
       toastSuccess(isNew ? 'Producto creado correctamente' : 'Producto actualizado');
       if (isNew) {
-        const { lookupBarcode } = await import('./scanner.js');
+        const { resetScan } = await import('./scanner.js');
         document.querySelector('.tab[data-tab="scan"]')?.click();
-        setTimeout(() => lookupBarcode(code), 300);
+        resetScan();
       }
     })
     .catch(err => {
@@ -328,8 +328,6 @@ export function initProducts() {
 
   window.editProduct = editProduct;
   window.deleteProduct = deleteProduct;
-  window.goToPage = goToPage;
-  window.sellProduct = sellProduct;
   window.fillForm = fillForm;
   window.sortBy = sortBy;
 }
@@ -348,32 +346,4 @@ export function showNewProductForm() {
   document.getElementById('formVenta').value = '';
   document.getElementById('formFamilia').value = '';
   showProductForm(false);
-}
-
-export async function sellProduct(id) {
-  const doc = await db.collection('productos').doc(id).get();
-  if (!doc.exists) return toastError('Producto no encontrado');
-  const data = doc.data();
-  const qty = parseInt(prompt(`Stock actual: ${data.cantidad}\n¿Cuántos querés vender?`, '1'));
-  if (!qty || qty <= 0) return;
-  if (qty > (data.cantidad || 0)) return toastError('No hay suficiente stock');
-
-  const total = qty * (data.venta || 0);
-
-  await db.collection('productos').doc(id).update({
-    cantidad: firebase.firestore.FieldValue.increment(-qty),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  await db.collection('ventas').add({
-    codigo: id,
-    articulo: data.articulo || '',
-    cantidad: qty,
-    precioVenta: data.venta || 0,
-    total,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  renderProductsTable();
-  toastSuccess(`Vendidos ${qty} × ${data.articulo || id} = ${formatMoney(total)}`);
 }

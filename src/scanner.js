@@ -86,11 +86,6 @@ function showProductResult(id, data) {
   document.getElementById('resultDesc').textContent = data.descripcion || '';
   currentEditId = id;
 
-  const sellBtn = document.getElementById('sellFromScanBtn');
-  if (sellBtn) {
-    sellBtn.style.display = (data.cantidad || 0) > 0 ? '' : 'none';
-  }
-
   renderProductImages(data.images);
 }
 
@@ -251,17 +246,4 @@ export function initScanner() {
   window.editFromScan = editFromScan;
   window.lookupBarcode = lookupBarcode;
   window.newProductFromScan = newProductFromScan;
-  window.sellFromScan = sellFromScan;
-}
-
-export async function sellFromScan() {
-  const code = currentEditId || document.getElementById('resultBarcode')?.textContent;
-  if (!code || code === '—') return;
-  try {
-    const { sellProduct } = await import('./products.js');
-    await sellProduct(code);
-    lookupBarcode(code);
-  } catch (err) {
-    toastError('Error: ' + (err.message || ''));
-  }
 }
