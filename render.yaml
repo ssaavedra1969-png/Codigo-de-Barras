@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: cb-glamours
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: true
