@@ -1,5 +1,5 @@
 import { db, storage, firebase } from './firebase.js';
-import { formatMoney, escHtml, showElement } from './utils.js';
+import { formatMoney, escHtml } from './utils.js';
 import { toastSuccess, toastError } from './toast.js';
 
 let currentEditId = null;
@@ -289,26 +289,6 @@ export function showNewProductForm() {
   document.getElementById('formVenta').value = '';
   document.getElementById('formFamilia').value = '';
   showProductForm(false);
-}
-
-export function newProductFromScan() {
-  const code = currentEditId || document.getElementById('resultBarcode')?.textContent;
-  if (!code || code === '—') return;
-  document.getElementById('formProductId').value = '';
-  document.getElementById('formCode').value = code;
-  document.getElementById('formCode').readOnly = true;
-  document.getElementById('formArticulo').value = '';
-  document.getElementById('formDesc').value = '';
-  document.getElementById('formColor').value = '';
-  document.getElementById('formSize').value = '';
-  document.getElementById('formCantidad').value = '';
-  document.getElementById('formCosto').value = '';
-  document.getElementById('formVenta').value = '';
-  document.getElementById('formFamilia').value = '';
-  showElement('scanResult', false);
-  showElement('scanError', false);
-  showProductForm(false);
-  document.querySelector('.tab[data-tab="products"]')?.click();
 }
 
 export async function sellProduct(id) {

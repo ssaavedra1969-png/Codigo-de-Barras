@@ -1,15 +1,12 @@
 import { db, firebase } from './firebase.js';
 import { formatMoney, escHtml, showElement } from './utils.js';
-import { toastError, toastSuccess, toast } from './toast.js';
+import { toastError, toast } from './toast.js';
 
 let currentEditId = null;
 let cameraScanner = null;
 let cameraActive = false;
 let cameraStarting = false;
 let cameraTimeout = null;
-
-let batchMode = false;
-let batchItems = [];
 
 export function getCurrentEditId() {
   return currentEditId;
@@ -42,18 +39,12 @@ export function lookupBarcode(code) {
   db.collection('productos').doc(code).get()
     .then(doc => {
       showElement('scanLoading', false);
-      if (batchMode) {
-        addBatchItem(code, doc.exists ? doc.data() : null);
-        return;
-      }
       if (doc.exists) {
         showProductResult(doc.id, doc.data());
         logScan(code, doc.data().articulo || '');
       } else {
         currentEditId = code;
-        showElement('scanError', true);
-        document.getElementById('scanErrorMsg').textContent =
-          `No se encontró ningún producto con el código ${code}`;
+        newProductFromScan();
       }
     })
     .catch(err => {
@@ -207,95 +198,6 @@ function stopCamera() {
   }
 }
 
-export function toggleBatchMode() {
-  batchMode = !batchMode;
-  const btn = document.getElementById('batchBtn');
-  const panel = document.getElementById('batchPanel');
-  if (btn) btn.classList.toggle('active');
-  if (panel) panel.style.display = batchMode ? 'flex' : 'none';
-  if (batchMode) {
-    toast('Modo batch activado. Los escaneos se acumularán en la lista.', 'info');
-  } else {
-    toast('Modo batch desactivado.', 'info');
-  }
-}
-
-function addBatchItem(code, data) {
-  const existing = batchItems.find(i => i.code === code);
-  if (existing) {
-    existing.count++;
-  } else {
-    batchItems.push({ code, articulo: data?.articulo || '—', precio: data?.venta || 0, count: 1 });
-  }
-  renderBatchList();
-  playScanSound();
-  toast(`Agregado: ${code}`, 'success', 1500);
-}
-
-function renderBatchList() {
-  const list = document.getElementById('batchList');
-  if (!list) return;
-  if (!batchItems.length) {
-    list.innerHTML = '<div class="batch-empty">No hay productos escaneados</div>';
-    updateBatchSummary();
-    return;
-  }
-  list.innerHTML = batchItems.map((item, i) =>
-    `<div class="batch-item">
-      <div class="batch-item-info">
-        <span class="batch-item-code">${escHtml(item.code)}</span>
-        <span class="batch-item-name">${escHtml(item.articulo)}</span>
-      </div>
-      <span class="batch-item-qty">×${item.count}</span>
-      <span class="batch-item-price">${formatMoney(item.precio * item.count)}</span>
-      <button class="batch-item-remove" onclick="window.removeBatchItem(${i})">&times;</button>
-    </div>`
-  ).join('');
-  updateBatchSummary();
-}
-
-function updateBatchSummary() {
-  const el = document.getElementById('batchSummary');
-  if (!el) return;
-  const total = batchItems.reduce((s, i) => s + i.count, 0);
-  const totalPrice = batchItems.reduce((s, i) => s + i.precio * i.count, 0);
-  el.textContent = `${total} productos · ${formatMoney(totalPrice)}`;
-}
-
-export function removeBatchItem(index) {
-  batchItems.splice(index, 1);
-  renderBatchList();
-}
-
-export function clearBatch() {
-  batchItems = [];
-  renderBatchList();
-}
-
-export function finishBatch() {
-  if (!batchItems.length) return toastError('No hay productos en el lote');
-  const total = batchItems.reduce((s, i) => s + i.precio * i.count, 0);
-  const lines = batchItems.map(i =>
-    `${i.code} — ${i.articulo} ×${i.count} = ${formatMoney(i.precio * i.count)}`
-  ).join('\n');
-  toast(`TOTAL: ${formatMoney(total)}\n${lines}`, 'info', 8000);
-}
-
-export function exportBatch() {
-  if (!batchItems.length) return toastError('No hay productos en el lote');
-  let text = 'Código,Artículo,Cantidad,Precio Unit.,Total\n';
-  batchItems.forEach(i => {
-    text += `${i.code},${i.articulo},${i.count},${i.precio},${(i.precio * i.count).toFixed(2)}\n`;
-  });
-  const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `batch-${Date.now()}.csv`;
-  link.click();
-  URL.revokeObjectURL(link.href);
-  toastSuccess('Lote exportado como CSV');
-}
-
 export function newProductFromScan() {
   const code = currentEditId || document.getElementById('resultBarcode')?.textContent;
   if (!code || code === '—') return;
@@ -335,11 +237,6 @@ export function initScanner() {
   window.toggleCamera = toggleCamera;
   window.resetScan = resetScan;
   window.editFromScan = editFromScan;
-  window.toggleBatchMode = toggleBatchMode;
-  window.removeBatchItem = removeBatchItem;
-  window.clearBatch = clearBatch;
-  window.finishBatch = finishBatch;
-  window.exportBatch = exportBatch;
   window.lookupBarcode = lookupBarcode;
   window.newProductFromScan = newProductFromScan;
   window.sellFromScan = sellFromScan;
