@@ -6,12 +6,17 @@ import { initScanner, resetScan, lookupBarcode, newProductFromScan } from './sca
 import { initProducts, renderProductsTable, closeProductForm, showNewProductForm, filterProducts, editProduct, deleteProduct } from './products.js';
 import { initAdmin, isAdminLoggedIn, toggleAdmin, doLogin, closeLogin, previewExcel, clearAdminFile, importAdminExcel, deleteAllProducts, exportToExcel, importFromExcel } from './admin.js';
 import { initGenerate } from './generate.js';
-import { initConteo } from './conteo.js';
+import { initConteo, conteoStartCamera, conteoStopCamera } from './conteo.js';
 
 let saving = false;
 let tabHistory = [];
+let currentTab = 'scan';
 
 function switchTab(tab, fromPop) {
+  if (currentTab === 'conteo' && tab !== 'conteo') {
+    conteoStopCamera();
+  }
+  currentTab = tab;
   if (!fromPop && tabHistory[tabHistory.length - 1] !== tab) {
     tabHistory.push(tab);
     history.pushState({ tab }, '');
@@ -25,6 +30,7 @@ function switchTab(tab, fromPop) {
   if (tab === 'scan') document.getElementById('barcodeInput')?.focus();
   if (tab === 'products') renderProductsTable();
   if (tab === 'admin') import('./admin.js').then(m => m.updateDeleteInfo());
+  if (tab === 'conteo') conteoStartCamera();
 }
 
 window.addEventListener('popstate', () => {

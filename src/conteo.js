@@ -40,7 +40,6 @@ export function initConteo() {
   window.conteoFinalizar = conteoFinalizar;
   window.conteoExportCSV = conteoExportCSV;
   window.conteoReiniciar = conteoReiniciar;
-  window.conteoToggleCamera = conteoToggleCamera;
 
   document.getElementById('conteoInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -229,27 +228,16 @@ export function conteoReiniciar() {
   toast('Conteo reiniciado', 'info');
 }
 
-export async function conteoToggleCamera() {
+export async function conteoStartCamera() {
+  if (cameraActive) return;
   initAudio();
-  if (cameraActive) { conteoStopCamera(); return; }
-  await conteoStartCamera();
-}
-
-async function conteoStartCamera() {
   const view = document.getElementById('conteoView');
-  const btn = document.getElementById('conteoCameraBtn');
-
-  view.innerHTML = '<div class="spinner"></div>';
-  btn.textContent = 'Iniciando...';
-  btn.disabled = true;
 
   try {
     const { Html5Qrcode } = await import('html5-qrcode');
     const scanner = new Html5Qrcode('conteoView');
     cameraScanner = scanner;
     cameraActive = true;
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Detener';
-    btn.disabled = false;
 
     await scanner.start(
       { facingMode: 'environment' },
@@ -261,8 +249,6 @@ async function conteoStartCamera() {
     );
   } catch (err) {
     cameraActive = false;
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cámara';
-    btn.disabled = false;
     const msg = err.message || '';
     if (msg.includes('permission') || msg.includes('NotAllowed')) {
       toastError('Permiso de cámara denegado');
@@ -272,7 +258,7 @@ async function conteoStartCamera() {
   }
 }
 
-function conteoStopCamera() {
+export function conteoStopCamera() {
   const s = cameraScanner;
   cameraScanner = null;
   cameraActive = false;
@@ -281,10 +267,5 @@ function conteoStopCamera() {
     try { s.clear().catch(() => {}); } catch (e) {}
   }
   const view = document.getElementById('conteoView');
-  if (view) view.innerHTML = '';
-  const btn = document.getElementById('conteoCameraBtn');
-  if (btn) {
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Cámara';
-    btn.disabled = false;
-  }
+  if (view) view.innerHTML = '<div class="conteo-camera-start"><p>Cámara detenida</p></div>';
 }

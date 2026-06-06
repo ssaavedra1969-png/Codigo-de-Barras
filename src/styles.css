@@ -754,9 +754,7 @@ select.form-input { cursor: pointer; }
 .conteo-camera { margin-bottom: 16px; }
 #conteoView { width: 100%; max-width: 400px; min-height: 180px; border-radius: var(--radius-sm); overflow: hidden; background: #000; margin: 0 auto 8px; }
 #conteoView video { width: 100%; display: block; }
-.conteo-camera-btn { width: 100%; max-width: 400px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px;
-  background: rgba(168,85,247,0.15); color: var(--conteo); border: 1px solid rgba(168,85,247,0.3); }
-.conteo-camera-btn:hover { background: rgba(168,85,247,0.25); border-color: var(--conteo); }
+.conteo-camera-start { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px 20px; color: var(--text-muted); font-size: 0.85rem; }
 
 .conteo-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
 .conteo-input { flex: 1; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);
