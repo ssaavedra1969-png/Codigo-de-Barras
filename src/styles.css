@@ -765,7 +765,7 @@ select.form-input { cursor: pointer; }
   border: 1px solid rgba(168,85,247,0.3); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
 .conteo-btn-add:hover { background: var(--conteo); color: #fff; }
 
-.conteo-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.conteo-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
 .conteo-stat { background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.12); border-radius: var(--radius-sm);
   padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .conteo-stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); font-weight: 600; }

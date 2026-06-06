@@ -7,6 +7,7 @@ let productCache = new Map();
 let cameraScanner = null;
 let cameraActive = false;
 let scanCooldown = new Map();
+let scanCount = 0;
 const COOLDOWN_MS = 2000;
 let beepCtx = null;
 
@@ -66,6 +67,7 @@ export async function conteoAddCode(code) {
   const last = scanCooldown.get(code);
   if (last && now - last < COOLDOWN_MS) return;
   scanCooldown.set(code, now);
+  scanCount++;
 
   playBeep();
 
@@ -153,6 +155,7 @@ function updateStats() {
   document.getElementById('conteoTotal').textContent = total;
   document.getElementById('conteoItems').textContent = conteoMap.size;
   document.getElementById('conteoDiff').textContent = diff;
+  document.getElementById('conteoEscaneos').textContent = scanCount;
 }
 
 export async function conteoFinalizar() {
@@ -223,6 +226,7 @@ export function conteoReiniciar() {
   if (conteoMap.size && !confirm('¿Reiniciar el conteo? Se perderán todos los datos actuales.')) return;
   conteoMap.clear();
   scanCooldown.clear();
+  scanCount = 0;
   renderConteoList();
   updateStats();
   toast('Conteo reiniciado', 'info');
