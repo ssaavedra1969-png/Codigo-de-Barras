@@ -808,6 +808,8 @@ select.form-input { cursor: pointer; }
 .conteo-btn-finalizar { display: flex; align-items: center; gap: 8px;
   background: linear-gradient(135deg, var(--conteo), #7c3aed); color: #fff; border: none; }
 .conteo-btn-finalizar:hover { opacity: 0.9; }
+.btn-wsp { background: #25D366; color: #fff; border: none; }
+.btn-wsp:hover { opacity: 0.88; }
 
 .conteo-modal-content h3 { margin-bottom: 8px; }
 .conteo-modal-content strong[style] { font-size: 0.9rem; }

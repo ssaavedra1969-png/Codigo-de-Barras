@@ -43,6 +43,7 @@ export function initConteo() {
   window.conteoExportCSV = conteoExportCSV;
   window.conteoReiniciar = conteoReiniciar;
   window.conteoDelCode = conteoDelCode;
+  window.conteoWhatsApp = conteoWhatsApp;
 
   document.getElementById('conteoInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -195,10 +196,49 @@ export async function conteoFinalizar() {
     <div class="modal-actions" style="border:none;padding:16px 0 0;margin:0;">
       <button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
       <button class="btn" onclick="this.closest('.modal-overlay').remove();conteoExportCSV()">Exportar CSV</button>
+      <button class="btn" style="background:#25D366;color:#fff;border:none;" onclick="this.closest('.modal-overlay').remove();conteoWhatsApp()">WhatsApp</button>
     </div>
   </div>`;
   overlay.addEventListener('click', () => overlay.remove());
   document.body.appendChild(overlay);
+}
+
+export function conteoWhatsApp() {
+  if (!conteoMap.size) return toastError('No hay datos para enviar');
+  const numero = prompt('Número de teléfono (con código de país, ej: 5215512345678):');
+  if (!numero || !numero.trim()) return;
+  const cleanNum = numero.replace(/\D/g, '');
+  if (cleanNum.length < 10) return toastError('Número inválido');
+
+  const grupos = {};
+  conteoMap.forEach((c, code) => {
+    const fam = c.familia || 'Sin familia';
+    if (!grupos[fam]) grupos[fam] = [];
+    grupos[fam].push({ code, ...c });
+  });
+
+  const now = new Date();
+  const fecha = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+  let msg = `📦 *CONTEO CD SANSOFT*\n📅 ${fecha}\n\n`;
+  msg += `Total: ${document.getElementById('conteoTotal').textContent} prendas\n`;
+  msg += `Distintas: ${conteoMap.size}\n`;
+  msg += `Diferencias: ${document.getElementById('conteoDiff').textContent}\n\n`;
+
+  for (const fam of Object.keys(grupos).sort()) {
+    const items = grupos[fam];
+    const sub = items.reduce((s, i) => s + i.count, 0);
+    msg += `*${fam}* — ${sub}\n`;
+    for (const item of items) {
+      const d = item.stock !== '—' ? item.count - item.stock : 0;
+      const signo = d > 0 ? '+' : '';
+      msg += `${item.code} · ${item.articulo !== '—' ? item.articulo : '—'} · DB:${item.stock} → ${item.count} (${signo}${d})\n`;
+    }
+    msg += '\n';
+  }
+
+  const url = `https://wa.me/${cleanNum}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+  toastSuccess('WhatsApp abierto');
 }
 
 export function conteoExportCSV() {
@@ -231,6 +271,7 @@ export function conteoDelCode(code) {
     conteoMap.delete(code);
     scanOrder = scanOrder.filter(x => x !== code);
   }
+  scanCount = Math.max(0, scanCount - 1);
   renderConteoList();
   updateStats();
 }
