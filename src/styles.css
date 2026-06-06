@@ -1100,4 +1100,10 @@ select.form-input { cursor: pointer; }
 
   .tab span { display: none; }
   .admin-card-danger .btn { width: 100%; justify-content: center; }
+
+  #conteoView { max-width: 240px; min-height: 100px; }
+  #conteoView video { max-height: 140px; object-fit: cover; }
+  .conteo-camera { margin-bottom: 8px; }
+  .conteo-input-row { margin-bottom: 10px; }
+  .conteo-sticky { padding-bottom: 6px; }
 }
