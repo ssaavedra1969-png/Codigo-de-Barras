@@ -203,30 +203,32 @@ export async function conteoFinalizar() {
   document.body.appendChild(overlay);
 }
 
-export function conteoWhatsApp() {
+export async function conteoWhatsApp() {
   if (!conteoMap.size) return toastError('No hay datos para enviar');
   const numero = prompt('Número de teléfono (con código de país, ej: 5215512345678):');
   if (!numero || !numero.trim()) return;
   const cleanNum = numero.replace(/\D/g, '');
   if (cleanNum.length < 10) return toastError('Número inválido');
 
-  const { blob, filename } = generarCSV();
+  const { blob, filename, csvText } = generarCSV();
   const file = new File([blob], filename, { type: 'text/csv' });
 
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    navigator.share({
-      files: [file],
-      title: 'Conteo CD SANSOFT',
-      text: 'Archivo de conteo generado',
-    }).catch(() => {
-      descargarCSV(blob, filename);
-      abrirWATexto(cleanNum);
-    });
-  } else {
-    descargarCSV(blob, filename);
-    abrirWATexto(cleanNum);
+  if (navigator.canShare && navigator.share) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'Conteo CD SANSOFT',
+        text: `Te comparto el conteo del ${new Date().toLocaleDateString()}`,
+      });
+      toastSuccess('Compartido — elegí WhatsApp para enviar el archivo');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
   }
-  toastSuccess('CSV descargado — abrí WhatsApp y adjuntalo');
+
+  descargarCSV(blob, filename);
+  abrirWATexto(cleanNum, csvText);
 }
 
 function generarCSV() {
@@ -238,7 +240,7 @@ function generarCSV() {
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const now = new Date();
   const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  return { blob, filename: `conteo_${ts}.csv` };
+  return { blob, filename: `conteo_${ts}.csv`, csvText: csv };
 }
 
 function descargarCSV(blob, filename) {
@@ -249,7 +251,7 @@ function descargarCSV(blob, filename) {
   URL.revokeObjectURL(link.href);
 }
 
-function abrirWATexto(numero) {
+function abrirWATexto(numero, csvText) {
   const grupos = {};
   conteoMap.forEach((c, code) => {
     const fam = c.familia || 'Sin familia';
@@ -275,6 +277,8 @@ function abrirWATexto(numero) {
     }
     msg += '\n';
   }
+
+  msg += `\n\nDATOS COMPLETOS:\n${csvText.slice(0, 3000)}${csvText.length > 3000 ? '\n...(el archivo completo se descargó)' : ''}`;
 
   const url = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
