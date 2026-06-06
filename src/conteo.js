@@ -6,6 +6,8 @@ let conteoMap = new Map();
 let productCache = new Map();
 let cameraScanner = null;
 let cameraActive = false;
+let scanCooldown = new Map();
+const COOLDOWN_MS = 2000;
 
 function playBeep() {
   try {
@@ -50,6 +52,11 @@ export async function conteoAdd() {
 }
 
 export async function conteoAddCode(code) {
+  const now = Date.now();
+  const last = scanCooldown.get(code);
+  if (last && now - last < COOLDOWN_MS) return;
+  scanCooldown.set(code, now);
+
   playBeep();
 
   if (conteoMap.has(code)) {
@@ -205,6 +212,7 @@ export function conteoExportCSV() {
 export function conteoReiniciar() {
   if (conteoMap.size && !confirm('¿Reiniciar el conteo? Se perderán todos los datos actuales.')) return;
   conteoMap.clear();
+  scanCooldown.clear();
   renderConteoList();
   updateStats();
   toast('Conteo reiniciado', 'info');
