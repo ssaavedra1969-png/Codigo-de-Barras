@@ -214,11 +214,13 @@ export function newProductFromScan() {
   document.getElementById('formCosto').value = '';
   document.getElementById('formVenta').value = '';
   document.getElementById('formFamilia').value = '';
+  document.getElementById('modalTitle').textContent = 'Nuevo Producto';
+  document.getElementById('productModal').style.display = 'flex';
+  document.getElementById('formSubmitBtn').textContent = 'Guardar';
+  document.getElementById('formSubmitBtn').disabled = false;
   showElement('scanResult', false);
   showElement('scanError', false);
-  window.showNewProductForm?.();
-  const tab = document.querySelector('.tab[data-tab="products"]');
-  if (tab) tab.click();
+  document.querySelector('.tab[data-tab="products"]')?.click();
 }
 
 export function initScanner() {
