@@ -756,6 +756,9 @@ select.form-input { cursor: pointer; }
 .conteo-top-left h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
 .conteo-top-left .conteo-sub { margin-top: 2px; }
 
+.conteo-sticky { position: sticky; top: 0; z-index: 10; background: var(--bg); padding-bottom: 12px;
+  border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+
 .conteo-scan-badge { display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: rgba(168,85,247,0.15); border: 2px solid var(--conteo); border-radius: var(--radius);
   padding: 10px 20px; min-width: 90px; flex-shrink: 0; }
