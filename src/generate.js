@@ -1,3 +1,4 @@
+import { db, firebase } from './firebase.js';
 import { toastError, toastSuccess } from './toast.js';
 import JsBarcode from 'jsbarcode';
 
@@ -10,6 +11,9 @@ const FORMATS = [
   { value: 'ITF', label: 'ITF-14 (variable)' },
 ];
 
+let existingCodes = new Set();
+let saving = false;
+
 export function initGenerate() {
   const select = document.getElementById('genFormat');
   if (select) {
@@ -18,15 +22,46 @@ export function initGenerate() {
     ).join('');
   }
 
+  db.collection('productos').get().then(snapshot => {
+    existingCodes = new Set();
+    snapshot.forEach(doc => existingCodes.add(doc.id));
+  }).catch(() => {});
+
   window.generateBarcode = generateBarcode;
   window.printBarcode = printBarcode;
   window.downloadBarcode = downloadBarcode;
+  window.generateUniqueCode = generateUniqueCode;
+  window.saveGeneratedProduct = saveGeneratedProduct;
+}
+
+export function generateUniqueCode() {
+  const format = document.getElementById('genFormat')?.value || 'EAN13';
+  let len, prefix;
+  if (format === 'EAN13') { len = 13; prefix = '779'; }
+  else if (format === 'EAN8') { len = 8; prefix = '77'; }
+  else if (format === 'UPC') { len = 12; prefix = '7'; }
+  else { len = 10; prefix = '9'; }
+
+  for (let attempt = 0; attempt < 100; attempt++) {
+    let code = prefix;
+    for (let i = prefix.length; i < len; i++) {
+      code += Math.floor(Math.random() * 10);
+    }
+    if (!existingCodes.has(code)) {
+      document.getElementById('genCode').value = code;
+      toastSuccess('Código único generado');
+      return;
+    }
+  }
+  toastError('No se pudo generar un código único, intentá de nuevo');
 }
 
 export function generateBarcode() {
   const code = document.getElementById('genCode').value.trim();
   const name = document.getElementById('genName').value.trim() || '';
-  const price = document.getElementById('genPrice').value.trim() || '';
+  const color = document.getElementById('genColor').value.trim() || '';
+  const size = document.getElementById('genSize').value.trim() || '';
+  const venta = document.getElementById('genVenta').value.trim() || '';
   const format = document.getElementById('genFormat')?.value || 'EAN13';
 
   if (!code) return toastError('Ingresá un código de barras');
@@ -64,12 +99,62 @@ export function generateBarcode() {
       label.style.cssText = 'text-align:center;padding:8px 0 0;font-family:monospace;font-size:12px;color:#000;';
       container.appendChild(label);
     }
-    label.innerHTML = [name, price ? `$${price}` : '', format].filter(Boolean).join(' · ');
+    const parts = [name, color, size ? `Talle ${size}` : '', venta ? `$${venta}` : '', format].filter(Boolean);
+    label.innerHTML = parts.join(' · ');
 
     document.getElementById('genResult').style.display = 'flex';
-    toastSuccess('Código generado');
   } catch (e) {
     toastError('Error generando código: ' + e.message);
+  }
+}
+
+export async function saveGeneratedProduct() {
+  if (saving) return;
+
+  const code = document.getElementById('genCode').value.trim();
+  if (!code) return toastError('Ingresá o generá un código de barras primero');
+  if (code.length < 3) return toastError('El código debe tener al menos 3 caracteres');
+
+  if (existingCodes.has(code)) {
+    return toastError('Ese código ya existe en la base de datos');
+  }
+
+  saving = true;
+  const btn = document.getElementById('genSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  const data = {
+    articulo: document.getElementById('genName').value.trim(),
+    descripcion: document.getElementById('genDesc').value.trim(),
+    color: document.getElementById('genColor').value.trim(),
+    talle: document.getElementById('genSize').value.trim(),
+    cantidad: parseInt(document.getElementById('genCantidad').value) || 0,
+    costo: parseFloat(document.getElementById('genCosto').value) || 0,
+    venta: parseFloat(document.getElementById('genVenta').value) || 0,
+    familia: document.getElementById('genFamilia').value,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    active: true
+  };
+
+  try {
+    await db.collection('productos').doc(code).set(data);
+    existingCodes.add(code);
+    toastSuccess('Producto guardado correctamente');
+    generateBarcode();
+  } catch (err) {
+    console.error('saveGeneratedProduct error:', err);
+    const msg = err.message || '';
+    if (msg.includes('permission') || msg.includes('Missing or insufficient')) {
+      toastError('Error de permisos: Firebase no permite escribir. Revisá las reglas de Firestore en la consola.');
+    } else {
+      toastError('Error al guardar: ' + err.message);
+    }
+  } finally {
+    saving = false;
+    btn.disabled = false;
+    btn.textContent = 'Guardar producto';
   }
 }
 

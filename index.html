@@ -200,27 +200,78 @@
         <div class="form-row">
           <div class="form-group" style="flex:1;">
             <label class="form-label">Código de barras</label>
-            <input type="text" class="form-input" id="genCode" placeholder="Ej: 7791234567890" inputmode="numeric">
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-input" id="genCode" placeholder="Ej: 7791234567890" inputmode="numeric" style="flex:1;">
+              <button class="btn btn-sm btn-outline" onclick="generateUniqueCode()" title="Generar código único">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Único
+              </button>
+            </div>
           </div>
           <div class="form-group" style="flex:1;">
-            <label class="form-label">Nombre del producto</label>
-            <input type="text" class="form-input" id="genName" placeholder="Nombre visible en la etiqueta">
+            <label class="form-label">Artículo</label>
+            <input type="text" class="form-input" id="genName" placeholder="Nombre del producto">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group" style="flex:1;">
-            <label class="form-label">Formato</label>
-            <select class="form-input" id="genFormat"></select>
+            <label class="form-label">Color</label>
+            <input type="text" class="form-input" id="genColor" placeholder="Ej: Rojo, Azul, Negro">
           </div>
           <div class="form-group" style="flex:1;">
-            <label class="form-label">Precio (opcional)</label>
-            <input type="text" class="form-input" id="genPrice" placeholder="$ 0.00">
+            <label class="form-label">Talle</label>
+            <input type="text" class="form-input" id="genSize" placeholder="Ej: M, XL, 42">
           </div>
         </div>
-        <div style="display:flex;gap:12px;margin-top:8px;">
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Cantidad</label>
+            <input type="number" class="form-input" id="genCantidad" step="1" min="0" placeholder="0">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Costo</label>
+            <input type="number" class="form-input" id="genCosto" step="0.01" min="0" placeholder="$ 0.00">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Venta</label>
+            <input type="number" class="form-input" id="genVenta" step="0.01" min="0" placeholder="$ 0.00">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Familia</label>
+            <select class="form-input" id="genFamilia">
+              <option value="">Seleccionar...</option>
+              <option value="OWOKO">OWOKO</option>
+              <option value="Remeras">Remeras</option>
+              <option value="Pantalones">Pantalones</option>
+              <option value="Camperas">Camperas</option>
+              <option value="Sweaters">Sweaters</option>
+              <option value="Camisas">Camisas</option>
+              <option value="Accesorios">Accesorios</option>
+              <option value="Calzado">Calzado</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-input" id="genDesc" rows="2" placeholder="Descripción del producto (opcional)"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Formato código de barras</label>
+            <select class="form-input" id="genFormat"></select>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
           <button class="btn" onclick="generateBarcode()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-            Generar
+            Generar código
+          </button>
+          <button class="btn btn-outline" onclick="saveGeneratedProduct()" id="genSaveBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar producto
           </button>
         </div>
       </div>
