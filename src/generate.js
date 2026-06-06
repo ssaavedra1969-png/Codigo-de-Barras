@@ -159,11 +159,22 @@ export async function saveGeneratedProduct() {
 }
 
 export function printBarcode() {
-  const svg = document.getElementById('barcodeSvg');
-  if (!svg?.innerHTML) return toastError('Generá un código primero');
+  const container = document.getElementById('barcodeContainer');
+  if (!container?.querySelector('svg')?.innerHTML) return toastError('Generá un código primero');
+  const style = `
+    <style>
+      body { display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; padding:40px; background:#fff; }
+      .gen-label { display:flex; flex-direction:column; align-items:center; gap:4px; }
+      svg { max-width:100%; height:auto; }
+      .gen-label-text { text-align:center; font-family:monospace; font-size:12px; color:#000; padding:8px 0 0; white-space:pre-wrap; }
+      @media print { body { padding:0; } }
+    </style>
+  `;
+  const content = container.innerHTML;
   const win = window.open('', '_blank');
-  win.document.write(`<html><head><style>body{display:flex;justify-content:center;padding:40px;margin:0;}svg{max-width:100%;}</style></head><body>${svg.outerHTML}</body></html>`);
+  win.document.write(`<html><head>${style}</head><body><div class="gen-label">${content}</div></body></html>`);
   win.document.close();
+  win.focus();
   win.print();
 }
 
