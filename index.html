@@ -295,9 +295,15 @@
 
     <!-- =============== TAB: CONTEO =============== -->
     <section id="tab-conteo" class="tab-content">
-      <div class="conteo-header">
-        <h2>Conteo</h2>
-        <p class="conteo-sub">Escaneá cada prenda para contar el stock exhibido</p>
+      <div class="conteo-top">
+        <div class="conteo-top-left">
+          <h2>Conteo</h2>
+          <p class="conteo-sub">Escaneá cada prenda para contar el stock exhibido</p>
+        </div>
+        <div class="conteo-scan-badge">
+          <span class="conteo-scan-label">ESCANEOS</span>
+          <strong class="conteo-scan-number" id="conteoEscaneos">0</strong>
+        </div>
       </div>
 
       <div class="conteo-camera" id="conteoCamera">
@@ -315,7 +321,6 @@
       </div>
 
       <div class="conteo-stats">
-        <span class="conteo-stat"><span class="conteo-stat-label">Escaneos</span><strong class="conteo-stat-value" id="conteoEscaneos">0</strong></span>
         <span class="conteo-stat"><span class="conteo-stat-label">Contadas</span><strong class="conteo-stat-value" id="conteoTotal">0</strong></span>
         <span class="conteo-stat"><span class="conteo-stat-label">Distintas</span><strong class="conteo-stat-value" id="conteoItems">0</strong></span>
         <span class="conteo-stat"><span class="conteo-stat-label">Diferencias</span><strong class="conteo-stat-value" id="conteoDiff">0</strong></span>

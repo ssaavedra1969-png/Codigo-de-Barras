@@ -751,6 +751,17 @@ select.form-input { cursor: pointer; }
 .conteo-header h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
 .conteo-sub { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
 
+.conteo-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.conteo-top-left { flex: 1; }
+.conteo-top-left h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
+.conteo-top-left .conteo-sub { margin-top: 2px; }
+
+.conteo-scan-badge { display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: rgba(168,85,247,0.15); border: 2px solid var(--conteo); border-radius: var(--radius);
+  padding: 10px 20px; min-width: 90px; flex-shrink: 0; }
+.conteo-scan-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); font-weight: 700; }
+.conteo-scan-number { font-size: 2rem; font-weight: 900; color: var(--conteo); line-height: 1; }
+
 .conteo-camera { margin-bottom: 16px; }
 #conteoView { width: 100%; max-width: 400px; min-height: 180px; border-radius: var(--radius-sm); overflow: hidden; background: #000; margin: 0 auto 8px; }
 #conteoView video { width: 100%; display: block; }
@@ -765,7 +776,7 @@ select.form-input { cursor: pointer; }
   border: 1px solid rgba(168,85,247,0.3); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
 .conteo-btn-add:hover { background: var(--conteo); color: #fff; }
 
-.conteo-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.conteo-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 .conteo-stat { background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.12); border-radius: var(--radius-sm);
   padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .conteo-stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); font-weight: 600; }
