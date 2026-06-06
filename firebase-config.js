@@ -1,4 +1,4 @@
-// Firebase Configuration — CB GLAMOURS
+// Firebase Configuration — CD SANSOFT
 const firebaseConfig = {
   apiKey: "AIzaSyDQ194tU-Yxal7BmGaTiyC2O-Yk8f4cINE",
   authDomain: "second-hub-479314-r4.firebaseapp.com",

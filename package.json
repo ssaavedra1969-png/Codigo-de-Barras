@@ -1,5 +1,5 @@
 {
-  "name": "cb-glamours-sync",
+  "name": "cd-sansoft",
   "version": "1.0.0",
   "description": "Script para sincronizar Stock.xlsx con Firebase Firestore",
   "private": true,

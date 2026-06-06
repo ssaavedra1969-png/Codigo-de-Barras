@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cb-glamours-v2';
+const CACHE_NAME = 'cd-sansoft-v1';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

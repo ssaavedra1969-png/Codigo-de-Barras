@@ -145,7 +145,7 @@ function parseAndCleanFloat(val) {
 
 // ─── Main ─────────────────────────────────────────────
 async function main() {
-  console.log('🚀 CB GLAMOURS — Sync de Stock a Firebase\n');
+  console.log('🚀 CD SANSOFT — Sync de Stock a Firebase\n');
 
   const rows = readExcel(EXCEL_PATH);
   if (!rows.length) {
