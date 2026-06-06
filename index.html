@@ -169,24 +169,25 @@
       </div>
 
       <div class="table-wrapper">
-        <table class="products-table" id="productsTable">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Artículo</th>
-              <th>Color</th>
-              <th>Talle</th>
-              <th>Cantidad</th>
-              <th>Venta</th>
-              <th>Familia</th>
-              <th>Vender</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="productsBody">
-            <tr><td colspan="9" class="table-empty">Cargando productos...</td></tr>
-          </tbody>
-        </table>
+          <table class="products-table" id="productsTable">
+            <thead>
+              <tr>
+                <th onclick="window.sortBy('id')" class="sortable" data-sort="id">Código<span class="sort-icon"></span></th>
+                <th onclick="window.sortBy('articulo')" class="sortable" data-sort="articulo">Artículo<span class="sort-icon"></span></th>
+                <th onclick="window.sortBy('color')" class="sortable" data-sort="color">Color<span class="sort-icon"></span></th>
+                <th onclick="window.sortBy('talle')" class="sortable" data-sort="talle">Talle<span class="sort-icon"></span></th>
+                <th onclick="window.sortBy('cantidad')" class="sortable" data-sort="cantidad">Stock<span class="sort-icon"></span></th>
+                <th onclick="window.sortBy('venta')" class="sortable" data-sort="venta">Venta<span class="sort-icon"></span></th>
+                <th onclick="window.sortBy('familia')" class="sortable" data-sort="familia">Familia<span class="sort-icon"></span></th>
+                <th onclick="window.sortBy('createdAt')" class="sortable" data-sort="createdAt">Fecha<span class="sort-icon"></span></th>
+                <th>Vender</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productsBody">
+              <tr><td colspan="10" class="table-empty">Cargando productos...</td></tr>
+            </tbody>
+          </table>
       </div>
 
       <div id="pagination" class="pagination"></div>
