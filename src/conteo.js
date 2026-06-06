@@ -10,14 +10,18 @@ let scanCooldown = new Map();
 const COOLDOWN_MS = 2000;
 let beepCtx = null;
 
+function initAudio() {
+  if (!beepCtx) {
+    beepCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (beepCtx.state === 'suspended') {
+    beepCtx.resume();
+  }
+}
+
 function playBeep() {
   try {
-    if (!beepCtx) {
-      beepCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (beepCtx.state === 'suspended') {
-      beepCtx.resume();
-    }
+    initAudio();
     const osc = beepCtx.createOscillator();
     const gain = beepCtx.createGain();
     osc.connect(gain);
@@ -50,6 +54,7 @@ export function initConteo() {
 }
 
 export async function conteoAdd() {
+  initAudio();
   const input = document.getElementById('conteoInput');
   const code = input.value.trim();
   if (!code) return;
@@ -225,6 +230,7 @@ export function conteoReiniciar() {
 }
 
 export async function conteoToggleCamera() {
+  initAudio();
   if (cameraActive) { conteoStopCamera(); return; }
   await conteoStartCamera();
 }
