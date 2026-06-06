@@ -8,20 +8,26 @@ let cameraScanner = null;
 let cameraActive = false;
 let scanCooldown = new Map();
 const COOLDOWN_MS = 2000;
+let beepCtx = null;
 
 function playBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    if (!beepCtx) {
+      beepCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (beepCtx.state === 'suspended') {
+      beepCtx.resume();
+    }
+    const osc = beepCtx.createOscillator();
+    const gain = beepCtx.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(beepCtx.destination);
     osc.frequency.value = 2200;
     osc.type = 'sine';
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.2, beepCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, beepCtx.currentTime + 0.15);
+    osc.start(beepCtx.currentTime);
+    osc.stop(beepCtx.currentTime + 0.15);
   } catch (e) {}
 }
 
