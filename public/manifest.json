@@ -1,0 +1,10 @@
+{
+  "name": "CB GLAMOURS",
+  "short_name": "CB Glamours",
+  "description": "Sistema de código de barras para inventario",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07070b",
+  "theme_color": "#07070b",
+  "icons": []
+}

@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CB GLAMOURS — Sistema de Código de Barras</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><rect x='3' y='4' width='2' height='16'/><rect x='7' y='4' width='2' height='16'/><rect x='11' y='4' width='2' height='16'/><rect x='15' y='4' width='4' height='16'/><rect x='21' y='4' width='1' height='16'/></svg>">
-  <link rel="stylesheet" href="styles.css">
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <!-- JsBarcode for generating barcode images -->
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <!-- SheetJS for Excel import -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- html5-qrcode for camera scanning -->
-  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#07070b">
+  <script type="module" src="/src/main.js"></script>
 </head>
 <body>
   <div class="app">
@@ -38,6 +34,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
             Generar
           </button>
+          <button class="tab" data-tab="dashboard" onclick="switchTab('dashboard')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Dashboard
+          </button>
           <button class="tab" data-tab="admin" onclick="switchTab('admin')" id="adminTab" style="display:none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Admin
@@ -58,10 +58,30 @@
       <input type="text" id="barcodeInput" class="barcode-input" autofocus
         placeholder="Escaneá o tipeá el código..." inputmode="numeric">
 
-      <button class="btn btn-camera" id="cameraBtn" onclick="toggleCamera()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Cámara
-      </button>
+      <div class="scan-actions-row">
+        <button class="btn btn-camera" id="cameraBtn" onclick="toggleCamera()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Cámara
+        </button>
+        <button class="btn btn-outline" id="batchBtn" onclick="toggleBatchMode()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Batch
+        </button>
+      </div>
+
+      <!-- Batch panel -->
+      <div id="batchPanel" class="batch-panel" style="display:none;">
+        <div class="batch-header">
+          <span class="batch-title">Escaneo batch</span>
+          <span id="batchSummary" class="batch-summary">0 productos</span>
+        </div>
+        <div id="batchList" class="batch-list"></div>
+        <div class="batch-actions">
+          <button class="btn btn-sm btn-outline" onclick="clearBatch()">Limpiar</button>
+          <button class="btn btn-sm btn-outline" onclick="exportBatch()">Exportar CSV</button>
+          <button class="btn btn-sm" onclick="finishBatch()">Resumen</button>
+        </div>
+      </div>
 
       <div id="cameraReader" class="camera-reader" style="display:none;" onclick="stopCamera()">
         <div class="camera-header" onclick="event.stopPropagation()">
@@ -127,9 +147,11 @@
               </div>
             </div>
             <p class="result-desc" id="resultDesc">—</p>
-            <div class="result-actions">
+            <div id="resultImages" class="result-images" style="display:none;"></div>
+            <div class="result-actions" id="resultActions">
               <button class="btn btn-sm" onclick="resetScan()">Nuevo escaneo</button>
               <button class="btn btn-sm btn-outline" onclick="editFromScan()">Editar</button>
+              <button class="btn btn-sm btn-outline" id="sellFromScanBtn" onclick="sellFromScan()" style="display:none;">Vender</button>
             </div>
           </div>
         </div>
@@ -140,8 +162,8 @@
     <section id="tab-products" class="tab-content">
       <div class="products-header">
         <h2>Productos</h2>
-        <div style="display:flex;gap:8px;">
-          <button class="btn" onclick="showProductForm()">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" onclick="showNewProductForm()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nuevo
           </button>
@@ -150,12 +172,16 @@
             Importar Excel
           </button>
           <input type="file" id="excelInput" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel()">
+          <button class="btn btn-outline" onclick="exportToExcel()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar
+          </button>
         </div>
       </div>
 
       <div class="search-bar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="productSearch" placeholder="Buscar por nombre o código..." oninput="filterProducts()">
+        <input type="text" id="productSearch" placeholder="Buscar por nombre o código...">
       </div>
 
       <div class="table-wrapper">
@@ -169,14 +195,17 @@
               <th>Cantidad</th>
               <th>Venta</th>
               <th>Familia</th>
+              <th>Vender</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="productsBody">
-            <tr><td colspan="8" class="table-empty">Cargando productos...</td></tr>
+            <tr><td colspan="9" class="table-empty">Cargando productos...</td></tr>
           </tbody>
         </table>
       </div>
+
+      <div id="pagination" class="pagination"></div>
     </section>
 
     <!-- =============== TAB: GENERATE =============== -->
@@ -199,15 +228,19 @@
         </div>
         <div class="form-row">
           <div class="form-group" style="flex:1;">
+            <label class="form-label">Formato</label>
+            <select class="form-input" id="genFormat"></select>
+          </div>
+          <div class="form-group" style="flex:1;">
             <label class="form-label">Precio (opcional)</label>
             <input type="text" class="form-input" id="genPrice" placeholder="$ 0.00">
           </div>
-          <div class="form-group" style="flex:0 0 auto; align-self:flex-end;">
-            <button class="btn" onclick="generateBarcode()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-              Generar
-            </button>
-          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button class="btn" onclick="generateBarcode()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Generar
+          </button>
         </div>
       </div>
 
@@ -218,6 +251,19 @@
         <div class="gen-actions">
           <button class="btn btn-sm" onclick="printBarcode()">Imprimir</button>
           <button class="btn btn-sm btn-outline" onclick="downloadBarcode()">Descargar PNG</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== TAB: DASHBOARD =============== -->
+    <section id="tab-dashboard" class="tab-content">
+      <div class="gen-header">
+        <h2>Dashboard</h2>
+        <p class="gen-sub">Estadísticas y reportes del inventario</p>
+      </div>
+      <div id="dashContent">
+        <div style="display:flex;justify-content:center;padding:60px 0;">
+          <div class="spinner"></div>
         </div>
       </div>
     </section>
@@ -250,7 +296,6 @@
         </div>
       </div>
 
-      <!-- Structure preview -->
       <div id="adminPreview" class="admin-card" style="display:none;">
         <div class="admin-card-header">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
@@ -268,7 +313,6 @@
         <div id="adminRowCount" class="admin-row-count"></div>
       </div>
 
-      <!-- Expected structure -->
       <div class="admin-card">
         <div class="admin-card-header">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -308,7 +352,6 @@
         </button>
       </div>
 
-      <!-- Danger zone -->
       <div class="admin-card admin-card-danger">
         <div class="admin-card-header">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -362,7 +405,7 @@
           <h3 id="modalTitle">Nuevo Producto</h3>
           <button class="modal-close" onclick="closeProductForm()">&times;</button>
         </div>
-        <form id="productForm" onsubmit="saveProduct(event)">
+        <form id="productForm">
           <input type="hidden" id="formProductId">
           <div class="form-row">
             <div class="form-group" style="flex:1;">
@@ -419,6 +462,10 @@
             <label class="form-label">Descripción</label>
             <textarea class="form-input" id="formDesc" rows="2"></textarea>
           </div>
+          <div class="form-group">
+            <label class="form-label">Imágenes del producto</label>
+            <input type="file" class="form-input" id="formImages" accept="image/*" multiple style="padding:8px 16px;">
+          </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-outline" onclick="closeProductForm()">Cancelar</button>
             <button type="submit" class="btn" id="formSubmitBtn">Guardar</button>
@@ -442,13 +489,14 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
       <span>Generar</span>
     </button>
+    <button class="mobile-tab" data-tab="dashboard" onclick="switchTab('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Dashboard</span>
+    </button>
     <button class="mobile-tab" data-tab="admin" onclick="switchTab('admin')" id="adminMobileTab" style="display:none;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       <span>Admin</span>
     </button>
   </nav>
-
-  <script src="firebase-config.js"></script>
-  <script src="app.js"></script>
 </body>
 </html>
