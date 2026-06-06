@@ -784,18 +784,14 @@ select.form-input { cursor: pointer; }
 
 .conteo-list { margin-bottom: 16px; }
 .conteo-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.9rem; }
-.conteo-group { margin-bottom: 16px; background: var(--bg-surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); overflow: hidden; }
-.conteo-group-title { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px;
-  font-weight: 700; font-size: 0.9rem; color: var(--conteo); background: rgba(168,85,247,0.05);
-  border-bottom: 1px solid rgba(168,85,247,0.1); }
-.conteo-group-total { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; }
 .conteo-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;
-  border-bottom: 1px solid var(--border); }
-.conteo-item:last-child { border-bottom: none; }
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 6px; transition: border-color 0.15s; }
+.conteo-item:first-child { border-color: rgba(168,85,247,0.3); }
 .conteo-item-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .conteo-item-code { font-family: var(--mono); font-size: 0.8rem; color: var(--text); }
 .conteo-item-art { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conteo-item-familia { font-size: 0.65rem; color: var(--conteo); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .conteo-item-nums { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .conteo-item-stock { font-size: 0.7rem; color: var(--text-muted); }
 .conteo-item-count { font-size: 1.1rem; font-weight: 800; color: var(--text); min-width: 28px; text-align: center; }
@@ -803,6 +799,10 @@ select.form-input { cursor: pointer; }
 .conteo-diff-ok { color: var(--green); }
 .conteo-diff-mas { color: var(--conteo); }
 .conteo-diff-menos { color: var(--red); }
+.conteo-item-del { width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(239,68,68,0.15);
+  color: var(--red); font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; line-height: 1; transition: all 0.15s; flex-shrink: 0; }
+.conteo-item-del:hover { background: var(--red); color: #fff; }
 
 .conteo-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-bottom: 20px; }
 .conteo-btn-finalizar { display: flex; align-items: center; gap: 8px;

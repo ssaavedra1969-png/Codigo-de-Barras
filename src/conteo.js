@@ -4,6 +4,7 @@ import { toastError, toastSuccess, toast } from './toast.js';
 
 let conteoMap = new Map();
 let productCache = new Map();
+let scanOrder = [];
 let cameraScanner = null;
 let cameraActive = false;
 let scanCooldown = new Map();
@@ -41,6 +42,7 @@ export function initConteo() {
   window.conteoFinalizar = conteoFinalizar;
   window.conteoExportCSV = conteoExportCSV;
   window.conteoReiniciar = conteoReiniciar;
+  window.conteoDelCode = conteoDelCode;
 
   document.getElementById('conteoInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -75,6 +77,7 @@ export async function conteoAddCode(code) {
     const c = conteoMap.get(code);
     c.count++;
     conteoMap.set(code, c);
+    moveToTop(code);
     renderConteoList();
     updateStats();
     return;
@@ -98,49 +101,45 @@ export async function conteoAddCode(code) {
     stock: data?.cantidad ?? '—',
     count: 1,
   });
+  scanOrder = scanOrder.filter(c => c !== code);
+  scanOrder.unshift(code);
 
   renderConteoList();
   updateStats();
 }
 
+function moveToTop(code) {
+  scanOrder = scanOrder.filter(c => c !== code);
+  scanOrder.unshift(code);
+}
+
 function renderConteoList() {
   const container = document.getElementById('conteoList');
-  if (!conteoMap.size) {
+  if (!scanOrder.length) {
     container.innerHTML = '<div class="conteo-empty">Todavía no se escaneó nada</div>';
     return;
   }
 
-  const groups = {};
-  conteoMap.forEach((c, code) => {
-    const fam = c.familia || 'Sin familia';
-    if (!groups[fam]) groups[fam] = [];
-    groups[fam].push({ code, ...c });
-  });
-
-  const familias = Object.keys(groups).sort();
   let html = '';
-  for (const fam of familias) {
-    const items = groups[fam];
-    const sub = items.reduce((s, i) => s + i.count, 0);
-    html += `<div class="conteo-group">
-      <div class="conteo-group-title">${escHtml(fam)} <span class="conteo-group-total">${sub}</span></div>`;
-    for (const item of items) {
-      const diff = item.stock !== '—' ? item.count - item.stock : 0;
-      const diffClass = diff === 0 ? 'conteo-diff-ok' : (diff > 0 ? 'conteo-diff-mas' : 'conteo-diff-menos');
-      const diffText = item.stock !== '—' ? (diff > 0 ? `+${diff}` : diff) : '—';
-      html += `<div class="conteo-item">
-        <div class="conteo-item-info">
-          <span class="conteo-item-code">${escHtml(item.code)}</span>
-          <span class="conteo-item-art">${escHtml(item.articulo)}</span>
-        </div>
-        <div class="conteo-item-nums">
-          <span class="conteo-item-stock">DB: ${item.stock}</span>
-          <span class="conteo-item-count">${item.count}</span>
-          <span class="conteo-item-diff ${diffClass}">${diffText}</span>
-        </div>
-      </div>`;
-    }
-    html += '</div>';
+  for (const code of scanOrder) {
+    const c = conteoMap.get(code);
+    if (!c) continue;
+    const diff = c.stock !== '—' ? c.count - c.stock : 0;
+    const diffClass = diff === 0 ? 'conteo-diff-ok' : (diff > 0 ? 'conteo-diff-mas' : 'conteo-diff-menos');
+    const diffText = c.stock !== '—' ? (diff > 0 ? `+${diff}` : diff) : '—';
+    html += `<div class="conteo-item" data-code="${escHtml(code)}">
+      <div class="conteo-item-info">
+        <span class="conteo-item-code">${escHtml(code)}</span>
+        <span class="conteo-item-art">${escHtml(c.articulo)}</span>
+        <span class="conteo-item-familia">${escHtml(c.familia)}</span>
+      </div>
+      <div class="conteo-item-nums">
+        <span class="conteo-item-stock">DB: ${c.stock}</span>
+        <span class="conteo-item-count">${c.count}</span>
+        <span class="conteo-item-diff ${diffClass}">${diffText}</span>
+        <button class="conteo-item-del" onclick="conteoDelCode('${escHtml(code)}')" title="Quitar uno">×</button>
+      </div>
+    </div>`;
   }
   container.innerHTML = html;
 }
@@ -222,9 +221,24 @@ export function conteoExportCSV() {
   toastSuccess('CSV exportado');
 }
 
+export function conteoDelCode(code) {
+  if (!conteoMap.has(code)) return;
+  const c = conteoMap.get(code);
+  if (c.count > 1) {
+    c.count--;
+    conteoMap.set(code, c);
+  } else {
+    conteoMap.delete(code);
+    scanOrder = scanOrder.filter(x => x !== code);
+  }
+  renderConteoList();
+  updateStats();
+}
+
 export function conteoReiniciar() {
   if (conteoMap.size && !confirm('¿Reiniciar el conteo? Se perderán todos los datos actuales.')) return;
   conteoMap.clear();
+  scanOrder = [];
   scanCooldown.clear();
   scanCount = 0;
   renderConteoList();
