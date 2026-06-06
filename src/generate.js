@@ -58,10 +58,6 @@ export function generateUniqueCode() {
 
 export function generateBarcode() {
   const code = document.getElementById('genCode').value.trim();
-  const name = document.getElementById('genName').value.trim() || '';
-  const color = document.getElementById('genColor').value.trim() || '';
-  const size = document.getElementById('genSize').value.trim() || '';
-  const venta = document.getElementById('genVenta').value.trim() || '';
   const format = document.getElementById('genFormat')?.value || 'EAN13';
 
   if (!code) return toastError('Ingresá un código de barras');
@@ -92,15 +88,8 @@ export function generateBarcode() {
     });
 
     const container = document.getElementById('barcodeContainer');
-    let label = container.querySelector('.gen-label-text');
-    if (!label) {
-      label = document.createElement('div');
-      label.className = 'gen-label-text';
-      label.style.cssText = 'text-align:center;padding:8px 0 0;font-family:monospace;font-size:12px;color:#000;';
-      container.appendChild(label);
-    }
-    const parts = [name, color, size ? `Talle ${size}` : '', venta ? `$${venta}` : '', format].filter(Boolean);
-    label.innerHTML = parts.join(' · ');
+    const existing = container.querySelector('.gen-label-text');
+    if (existing) existing.remove();
 
     document.getElementById('genResult').style.display = 'flex';
   } catch (e) {
@@ -164,15 +153,13 @@ export function printBarcode() {
   const style = `
     <style>
       body { display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; padding:40px; background:#fff; }
-      .gen-label { display:flex; flex-direction:column; align-items:center; gap:4px; }
       svg { max-width:100%; height:auto; }
-      .gen-label-text { text-align:center; font-family:monospace; font-size:12px; color:#000; padding:8px 0 0; white-space:pre-wrap; }
       @media print { body { padding:0; } }
     </style>
   `;
   const content = container.innerHTML;
   const win = window.open('', '_blank');
-  win.document.write(`<html><head>${style}</head><body><div class="gen-label">${content}</div></body></html>`);
+  win.document.write(`<html><head>${style}</head><body>${content}</body></html>`);
   win.document.close();
   win.focus();
   win.print();
