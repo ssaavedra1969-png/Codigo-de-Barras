@@ -44,7 +44,9 @@ export function lookupBarcode(code) {
         logScan(code, doc.data().articulo || '');
       } else {
         currentEditId = code;
-        newProductFromScan();
+        showElement('scanError', true);
+        document.getElementById('scanErrorMsg').innerHTML =
+          `Código <strong>${escHtml(code)}</strong> no encontrado<br><span style="font-size:0.85rem;color:var(--text-secondary)">¿Qué querés hacer?</span>`;
       }
     })
     .catch(err => {

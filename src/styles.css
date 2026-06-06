@@ -7,22 +7,26 @@
 }
 
 :root {
-  --bg: #07070b;
-  --bg-surface: #0d0d14;
-  --bg-elevated: #14141e;
-  --bg-hover: rgba(255,255,255,0.03);
-  --border: rgba(255,255,255,0.06);
-  --border-hover: rgba(255,255,255,0.12);
-  --text: #f0f0f2;
-  --text-secondary: #88889a;
-  --text-muted: #4a4a5a;
-  --accent: #ccff00;
-  --accent-dim: rgba(204,255,0,0.08);
-  --accent-mid: rgba(204,255,0,0.18);
-  --accent-glow: rgba(204,255,0,0.05);
-  --accent-gradient: linear-gradient(135deg, #ccff00, #88dd00);
-  --red: #ff4466;
-  --red-bg: rgba(255,68,102,0.08);
+  --bg: #080b1a;
+  --bg-surface: #0d1230;
+  --bg-elevated: #121840;
+  --bg-hover: rgba(59,130,246,0.04);
+  --border: rgba(59,130,246,0.12);
+  --border-hover: rgba(255,215,0,0.2);
+  --text: #f0f2ff;
+  --text-secondary: #9499c9;
+  --text-muted: #555a8a;
+  --accent: #ffd700;
+  --accent-dim: rgba(255,215,0,0.1);
+  --accent-mid: rgba(255,215,0,0.2);
+  --accent-glow: rgba(255,215,0,0.08);
+  --accent-gradient: linear-gradient(135deg, #ffd700, #3b82f6);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.1);
+  --blue-mid: rgba(59,130,246,0.2);
+  --blue-glow: rgba(59,130,246,0.08);
+  --red: #ff4477;
+  --red-bg: rgba(255,68,119,0.08);
   --green: #22dd88;
   --green-bg: rgba(34,221,136,0.08);
   --radius: 14px;
@@ -30,11 +34,11 @@
   --radius-xs: 7px;
   --font: 'Inter', system-ui, -apple-system, sans-serif;
   --mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace;
-  --shadow-border: 0 0 0 1px rgba(255,255,255,0.04);
+  --shadow-border: 0 0 0 1px rgba(59,130,246,0.06);
   --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
   --shadow: 0 8px 32px rgba(0,0,0,0.5);
   --shadow-lg: 0 24px 64px rgba(0,0,0,0.6);
-  --glow-accent: 0 0 20px rgba(204,255,0,0.06), 0 0 60px rgba(204,255,0,0.03);
+  --glow-accent: 0 0 20px rgba(255,215,0,0.06), 0 0 60px rgba(59,130,246,0.04);
 }
 
 ::selection { background: var(--accent); color: #000; }
@@ -351,6 +355,7 @@ body::after {
 }
 .scan-error svg { opacity: 0.5; }
 .scan-error p { color: var(--red); font-size: 1rem; font-weight: 500; }
+.scan-error-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 
 /* Camera reader overlay */
 .camera-reader {

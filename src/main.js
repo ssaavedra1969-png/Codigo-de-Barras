@@ -9,8 +9,13 @@ import { initGenerate } from './generate.js';
 import { initDashboard, loadDashboard } from './dashboard.js';
 
 let saving = false;
+let tabHistory = [];
 
-function switchTab(tab) {
+function switchTab(tab, fromPop) {
+  if (!fromPop && tabHistory[tabHistory.length - 1] !== tab) {
+    tabHistory.push(tab);
+    history.pushState({ tab }, '');
+  }
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
@@ -22,6 +27,13 @@ function switchTab(tab) {
   if (tab === 'admin') import('./admin.js').then(m => m.updateDeleteInfo());
   if (tab === 'dashboard') loadDashboard();
 }
+
+window.addEventListener('popstate', () => {
+  if (tabHistory.length > 1) {
+    tabHistory.pop();
+    switchTab(tabHistory[tabHistory.length - 1], true);
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   switchTab('scan');

@@ -144,7 +144,7 @@ function renderFamiliaChart(products) {
   });
 
   const colors = [
-    '#ccff00', '#ff4466', '#22dd88', '#88bbff', '#ffaa00',
+    '#ffd700', '#ff4466', '#22dd88', '#3b82f6', '#ffaa00',
     '#ff66cc', '#44ddff', '#aa88ff', '#ff8844', '#66ffaa'
   ];
 
@@ -191,8 +191,8 @@ function renderStockChart(products) {
         datasets: [{
           label: 'Stock',
           data: sorted.map(p => p.cantidad || 0),
-          backgroundColor: sorted.map(p => (p.cantidad || 0) <= 3 ? '#ff446688' : '#ccff0088'),
-          borderColor: sorted.map(p => (p.cantidad || 0) <= 3 ? '#ff4466' : '#ccff00'),
+          backgroundColor: sorted.map(p => (p.cantidad || 0) <= 3 ? '#ff446688' : '#ffd70088'),
+          borderColor: sorted.map(p => (p.cantidad || 0) <= 3 ? '#ff4466' : '#ffd700'),
           borderWidth: 1,
           borderRadius: 4,
         }]

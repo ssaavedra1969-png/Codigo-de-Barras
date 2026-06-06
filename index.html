@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CB GLAMOURS — Sistema de Código de Barras</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><rect x='3' y='4' width='2' height='16'/><rect x='7' y='4' width='2' height='16'/><rect x='11' y='4' width='2' height='16'/><rect x='15' y='4' width='4' height='16'/><rect x='21' y='4' width='1' height='16'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd700'><rect x='3' y='4' width='2' height='16'/><rect x='7' y='4' width='2' height='16'/><rect x='11' y='4' width='2' height='16'/><rect x='15' y='4' width='4' height='16'/><rect x='21' y='4' width='1' height='16'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#07070b">
+  <meta name="theme-color" content="#0d1230">
   <script type="module" src="/src/main.js"></script>
 </head>
 <body>
@@ -92,8 +92,10 @@
       <div id="scanError" class="scan-error" style="display:none;">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         <p id="scanErrorMsg">Producto no encontrado</p>
-        <button class="btn btn-sm" onclick="newProductFromScan()">+ Crear producto</button>
-        <button class="btn btn-sm btn-outline" onclick="resetScan()">Escaneá otro</button>
+        <div class="scan-error-actions">
+          <button class="btn btn-sm" onclick="newProductFromScan()">Crear producto</button>
+          <button class="btn btn-sm btn-outline" onclick="resetScan()">Seguir escaneando</button>
+        </div>
       </div>
 
       <!-- Product result card -->
