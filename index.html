@@ -34,6 +34,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
             Generar
           </button>
+          <button class="tab tab-conteo" data-tab="conteo" onclick="switchTab('conteo')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+            Conteo
+          </button>
           <button class="tab" data-tab="admin" onclick="switchTab('admin')" id="adminTab" style="display:none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Admin
@@ -289,6 +293,46 @@
       </div>
     </section>
 
+    <!-- =============== TAB: CONTEO =============== -->
+    <section id="tab-conteo" class="tab-content">
+      <div class="conteo-header">
+        <h2>Conteo</h2>
+        <p class="conteo-sub">Escaneá cada prenda para contar el stock exhibido</p>
+      </div>
+
+      <div class="conteo-camera" id="conteoCamera">
+        <div id="conteoView"></div>
+        <button class="btn conteo-camera-btn" id="conteoCameraBtn" onclick="conteoToggleCamera()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Cámara
+        </button>
+      </div>
+
+      <div class="conteo-input-row">
+        <input type="text" class="conteo-input" id="conteoInput" placeholder="Tipeá el código manual..." inputmode="numeric">
+        <button class="btn conteo-btn-add" onclick="conteoAdd()">+</button>
+      </div>
+
+      <div class="conteo-stats">
+        <span class="conteo-stat"><span class="conteo-stat-label">Contadas</span><strong class="conteo-stat-value" id="conteoTotal">0</strong></span>
+        <span class="conteo-stat"><span class="conteo-stat-label">Distintas</span><strong class="conteo-stat-value" id="conteoItems">0</strong></span>
+        <span class="conteo-stat"><span class="conteo-stat-label">Diferencias</span><strong class="conteo-stat-value" id="conteoDiff">0</strong></span>
+      </div>
+
+      <div id="conteoList" class="conteo-list">
+        <div class="conteo-empty">Todavía no se escaneó nada</div>
+      </div>
+
+      <div class="conteo-actions">
+        <button class="btn conteo-btn-finalizar" onclick="conteoFinalizar()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Finalizar conteo
+        </button>
+        <button class="btn btn-outline" onclick="conteoExportCSV()">Exportar CSV</button>
+        <button class="btn btn-outline" onclick="conteoReiniciar()">Reiniciar</button>
+      </div>
+    </section>
+
     <!-- =============== TAB: ADMIN =============== -->
     <section id="tab-admin" class="tab-content">
       <div class="admin-header">
@@ -515,6 +559,10 @@
     <button class="mobile-tab" data-tab="generate" onclick="switchTab('generate')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
       <span>Generar</span>
+    </button>
+    <button class="mobile-tab mobile-tab-conteo" data-tab="conteo" onclick="switchTab('conteo')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+      <span>Conteo</span>
     </button>
     <button class="mobile-tab" data-tab="admin" onclick="switchTab('admin')" id="adminMobileTab" style="display:none;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>

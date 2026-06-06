@@ -6,6 +6,7 @@ import { initScanner, resetScan, lookupBarcode, newProductFromScan } from './sca
 import { initProducts, renderProductsTable, closeProductForm, showNewProductForm, filterProducts, editProduct, deleteProduct } from './products.js';
 import { initAdmin, isAdminLoggedIn, toggleAdmin, doLogin, closeLogin, previewExcel, clearAdminFile, importAdminExcel, deleteAllProducts, exportToExcel, importFromExcel } from './admin.js';
 import { initGenerate } from './generate.js';
+import { initConteo } from './conteo.js';
 
 let saving = false;
 let tabHistory = [];
@@ -38,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && ['1', '2', '3'].includes(e.key)) {
+  if (e.ctrlKey && ['1', '2', '3', '4'].includes(e.key)) {
     e.preventDefault();
-    const tabs = ['scan', 'products', 'generate'];
+    const tabs = ['scan', 'products', 'generate', 'conteo'];
     switchTab(tabs[parseInt(e.key) - 1]);
   }
 });
@@ -49,6 +50,7 @@ initScanner();
 initProducts();
 initAdmin();
 initGenerate();
+initConteo();
 
 window.switchTab = switchTab;
 window.closeProductForm = closeProductForm;
