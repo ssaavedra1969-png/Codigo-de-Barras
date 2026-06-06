@@ -210,6 +210,46 @@ export function conteoWhatsApp() {
   const cleanNum = numero.replace(/\D/g, '');
   if (cleanNum.length < 10) return toastError('Número inválido');
 
+  const { blob, filename } = generarCSV();
+  const file = new File([blob], filename, { type: 'text/csv' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({
+      files: [file],
+      title: 'Conteo CD SANSOFT',
+      text: 'Archivo de conteo generado',
+    }).catch(() => {
+      descargarCSV(blob, filename);
+      abrirWATexto(cleanNum);
+    });
+  } else {
+    descargarCSV(blob, filename);
+    abrirWATexto(cleanNum);
+  }
+  toastSuccess('CSV descargado — abrí WhatsApp y adjuntalo');
+}
+
+function generarCSV() {
+  let csv = 'Código,Artículo,Familia,Stock DB,Contado,Diferencia\n';
+  conteoMap.forEach((c, code) => {
+    const diff = c.stock !== '—' ? c.count - c.stock : 0;
+    csv += `"${code}","${c.articulo}","${c.familia}",${c.stock},${c.count},${diff}\n`;
+  });
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const now = new Date();
+  const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+  return { blob, filename: `conteo_${ts}.csv` };
+}
+
+function descargarCSV(blob, filename) {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function abrirWATexto(numero) {
   const grupos = {};
   conteoMap.forEach((c, code) => {
     const fam = c.familia || 'Sin familia';
@@ -236,28 +276,14 @@ export function conteoWhatsApp() {
     msg += '\n';
   }
 
-  const url = `https://wa.me/${cleanNum}?text=${encodeURIComponent(msg)}`;
+  const url = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
-  toastSuccess('WhatsApp abierto');
 }
 
 export function conteoExportCSV() {
   if (!conteoMap.size) return toastError('No hay datos para exportar');
-
-  let csv = 'Código,Artículo,Familia,Stock DB,Contado,Diferencia\n';
-  conteoMap.forEach((c, code) => {
-    const diff = c.stock !== '—' ? c.count - c.stock : 0;
-    csv += `"${code}","${c.articulo}","${c.familia}",${c.stock},${c.count},${diff}\n`;
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  const now = new Date();
-  const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  link.download = `conteo_${ts}.csv`;
-  link.click();
-  URL.revokeObjectURL(link.href);
+  const { blob, filename } = generarCSV();
+  descargarCSV(blob, filename);
   toastSuccess('CSV exportado');
 }
 
