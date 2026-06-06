@@ -56,14 +56,14 @@ export function renderProductsTable(filter) {
 
   loadProducts().then(products => {
     if (!products.length) {
-      tbody.innerHTML = '<tr><td colspan="10" class="table-empty">No hay productos. Agregá el primero.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="table-empty">No hay productos. Agregá el primero.</td></tr>';
       updatePagination(0);
       return;
     }
 
     const filtered = getFilteredProducts(filter);
     if (!filtered.length) {
-      tbody.innerHTML = `<tr><td colspan="10" class="table-empty">Sin resultados para "${filter}"</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="table-empty">Sin resultados para "${filter}"</td></tr>`;
       updatePagination(0);
       return;
     }
@@ -86,7 +86,6 @@ export function renderProductsTable(filter) {
         <td style="font-weight:600;">${formatMoney(p.venta)}</td>
         <td>${escHtml(p.familia || '—')}</td>
         <td style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">${formatDate(p.createdAt)}</td>
-        <td>${p.cantidad > 0 ? `<button class="action-btn sell-btn" onclick="window.sellProduct('${p.id}')">Vender</button>` : ''}</td>
         <td class="table-actions">
           <button class="action-btn" onclick="window.editProduct('${p.id}')">Editar</button>
           <button class="action-btn danger" onclick="window.deleteProduct('${p.id}')">Eliminar</button>
@@ -97,7 +96,7 @@ export function renderProductsTable(filter) {
     updatePagination(sorted.length, totalPages, currentPage);
     updateSortIndicators();
   }).catch(err => {
-    tbody.innerHTML = `<tr><td colspan="10" class="table-empty">Error: ${err.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="table-empty">Error: ${err.message}</td></tr>`;
   });
 }
 

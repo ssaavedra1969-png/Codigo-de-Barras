@@ -32,6 +32,7 @@ export function doLogin(e) {
   document.getElementById('loginBtn').classList.add('logged-in');
   document.getElementById('adminTab').style.display = '';
   document.getElementById('adminMobileTab').style.display = '';
+  document.getElementById('adminProductActions').style.display = '';
   toastSuccess('Sesión iniciada como administrador');
 }
 
@@ -45,6 +46,7 @@ function doLogout() {
   document.getElementById('loginBtn').classList.remove('logged-in');
   document.getElementById('adminTab').style.display = 'none';
   document.getElementById('adminMobileTab').style.display = 'none';
+  document.getElementById('adminProductActions').style.display = 'none';
   if (document.getElementById('tab-admin')?.classList.contains('active')) {
     const scanTab = document.querySelector('.tab[data-tab="scan"]');
     if (scanTab) scanTab.click();

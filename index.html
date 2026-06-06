@@ -151,15 +151,17 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nuevo
           </button>
-          <button class="btn btn-outline" onclick="document.getElementById('excelInput').click()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Importar Excel
-          </button>
-          <input type="file" id="excelInput" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel()">
-          <button class="btn btn-outline" onclick="exportToExcel()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Exportar
-          </button>
+          <div id="adminProductActions" style="display:none;">
+            <button class="btn btn-outline" onclick="document.getElementById('excelInput').click()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Importar Excel
+            </button>
+            <input type="file" id="excelInput" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel()">
+            <button class="btn btn-outline" onclick="exportToExcel()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar
+            </button>
+          </div>
         </div>
       </div>
 
@@ -180,12 +182,11 @@
                 <th onclick="window.sortBy('venta')" class="sortable" data-sort="venta">Venta<span class="sort-icon"></span></th>
                 <th onclick="window.sortBy('familia')" class="sortable" data-sort="familia">Familia<span class="sort-icon"></span></th>
                 <th onclick="window.sortBy('createdAt')" class="sortable" data-sort="createdAt">Fecha<span class="sort-icon"></span></th>
-                <th>Vender</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="productsBody">
-              <tr><td colspan="10" class="table-empty">Cargando productos...</td></tr>
+              <tr><td colspan="9" class="table-empty">Cargando productos...</td></tr>
             </tbody>
           </table>
       </div>
