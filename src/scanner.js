@@ -40,8 +40,16 @@ export function lookupBarcode(code) {
     .then(doc => {
       showElement('scanLoading', false);
       if (doc.exists) {
-        showProductResult(doc.id, doc.data());
-        logScan(code, doc.data().articulo || '');
+        const data = doc.data();
+        if (data.active === false) {
+          currentEditId = code;
+          showElement('scanError', true);
+          document.getElementById('scanErrorMsg').innerHTML =
+            `Código <strong>${escHtml(code)}</strong> no encontrado<br><span style="font-size:0.85rem;color:var(--text-secondary)">¿Qué querés hacer?</span>`;
+        } else {
+          showProductResult(doc.id, data);
+          logScan(code, data.articulo || '');
+        }
       } else {
         currentEditId = code;
         showElement('scanError', true);

@@ -3,10 +3,9 @@ import { db, firebase } from './firebase.js';
 import { showElement } from './utils.js';
 import { toastError, toastSuccess, toast } from './toast.js';
 import { initScanner, resetScan, lookupBarcode, newProductFromScan } from './scanner.js';
-import { initProducts, renderProductsTable, closeProductForm, showNewProductForm, filterProducts, editProduct, deleteProduct, sellProduct } from './products.js';
+import { initProducts, renderProductsTable, closeProductForm, showNewProductForm, filterProducts, editProduct, deleteProduct } from './products.js';
 import { initAdmin, isAdminLoggedIn, toggleAdmin, doLogin, closeLogin, previewExcel, clearAdminFile, importAdminExcel, deleteAllProducts, exportToExcel, importFromExcel } from './admin.js';
 import { initGenerate } from './generate.js';
-import { initDashboard, loadDashboard } from './dashboard.js';
 
 let saving = false;
 let tabHistory = [];
@@ -25,7 +24,6 @@ function switchTab(tab, fromPop) {
   if (tab === 'scan') document.getElementById('barcodeInput')?.focus();
   if (tab === 'products') renderProductsTable();
   if (tab === 'admin') import('./admin.js').then(m => m.updateDeleteInfo());
-  if (tab === 'dashboard') loadDashboard();
 }
 
 window.addEventListener('popstate', () => {
@@ -40,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && ['1', '2', '3', '4'].includes(e.key)) {
+  if (e.ctrlKey && ['1', '2', '3'].includes(e.key)) {
     e.preventDefault();
-    const tabs = ['scan', 'products', 'generate', 'dashboard'];
+    const tabs = ['scan', 'products', 'generate'];
     switchTab(tabs[parseInt(e.key) - 1]);
   }
 });
@@ -51,18 +49,15 @@ initScanner();
 initProducts();
 initAdmin();
 initGenerate();
-initDashboard();
 
 window.switchTab = switchTab;
 window.closeProductForm = closeProductForm;
 window.showNewProductForm = showNewProductForm;
 window.filterProducts = filterProducts;
 window.renderProductsTable = renderProductsTable;
-window.loadDashboard = loadDashboard;
 window.exportToExcel = exportToExcel;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
-window.sellProduct = sellProduct;
 window.toggleAdmin = toggleAdmin;
 window.doLogin = doLogin;
 window.closeLogin = closeLogin;

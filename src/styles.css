@@ -14,8 +14,8 @@
   --border: rgba(59,130,246,0.12);
   --border-hover: rgba(255,215,0,0.2);
   --text: #f0f2ff;
-  --text-secondary: #9499c9;
-  --text-muted: #555a8a;
+  --text-secondary: #f0f2ff;
+  --text-muted: #b8bce0;
   --accent: #ffd700;
   --accent-dim: rgba(255,215,0,0.1);
   --accent-mid: rgba(255,215,0,0.2);
@@ -743,59 +743,6 @@ select.form-input { cursor: pointer; }
 .gen-label { background: #fff; border-radius: var(--radius); padding: 32px 44px; display: flex; justify-content: center; box-shadow: var(--shadow-lg); }
 .gen-actions { display: flex; gap: 10px; }
 
-/* ==================== DASHBOARD TAB ==================== */
-.dash-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 24px;
-}
-.dash-stat-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: var(--shadow-sm);
-}
-.dash-stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.dash-stat-body { display: flex; flex-direction: column; gap: 2px; }
-.dash-stat-value { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
-.dash-stat-value.dash-stat-danger { color: var(--red); }
-.dash-stat-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
-
-.dash-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 18px;
-}
-.dash-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 18px;
-  box-shadow: var(--shadow-sm);
-}
-.dash-card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 14px;
-}
-.dash-card-header h3 { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; }
-.dash-chart-wrapper { position: relative; max-height: 300px; }
-
 /* ==================== ADMIN TAB ==================== */
 .admin-header { margin-bottom: 22px; }
 .admin-header h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; }
@@ -986,7 +933,6 @@ select.form-input { cursor: pointer; }
 
   .tab-content { padding-top: 20px; }
   #tab-scan.tab-content.active { display: flex; flex-direction: column; flex: 1; padding: 16px; }
-  #tab-dashboard.tab-content.active { padding: 16px; }
 
   .barcode-input { height: 60px; font-size: 1.4rem; border-radius: var(--radius-sm); padding: 0 18px; }
   .barcode-input:focus { transform: none; }
